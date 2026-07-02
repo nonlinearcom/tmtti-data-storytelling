@@ -21,19 +21,27 @@ const { title, events, activeIndex, activeEvent, next, prev } = useStory()
         </figcaption>
       </figure>
       <div class="body" v-html="activeEvent.text"></div>
+      <p v-if="activeEvent.source" class="source">
+        Source:
+        <a
+          v-if="activeEvent.source.url"
+          :href="activeEvent.source.url"
+          target="_blank"
+          rel="noopener"
+          >{{ activeEvent.source.label }}</a
+        >
+        <span v-else>{{ activeEvent.source.label }}</span>
+      </p>
     </template>
 
     <template v-else>
-      <p class="kicker">MICRI data-storytelling workshop · demo</p>
-      <h2>{{ title?.headline || 'The Digital Border' }}</h2>
+      <p class="kicker">MICRI data-storytelling workshop</p>
+      <h2>{{ title?.headline || 'TMTTI' }}</h2>
       <div class="body">
-        <p>
-          Five moments in how borders learned to read people as data — from the photo ID to the
-          punch card. Rebuilt from a student TimelineJS + StoryMapJS spreadsheet.
-        </p>
+        <div v-if="title?.text" v-html="title.text"></div>
         <p>
           Click a bar on the timeline — or press <kbd>→</kbd> — to move through the story. Each
-          event keeps its date range and its place.
+          event keeps its date range, its place, and its source.
         </p>
       </div>
     </template>
@@ -98,6 +106,19 @@ figcaption {
 }
 .body :deep(p) {
   margin: 0 0 8px;
+}
+.body :deep(div) {
+  margin: 0 0 8px;
+}
+.source {
+  font-size: 12px;
+  color: var(--text-muted);
+  border-top: 1px solid var(--gridline);
+  padding-top: 10px;
+  margin: 12px 0 0;
+}
+.source a {
+  color: var(--accent-strong);
 }
 kbd {
   border: 1px solid var(--border);

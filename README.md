@@ -1,9 +1,11 @@
-# The Digital Border — map × timeline demo
+# TMTTI — map × timeline stories
 
-A small custom rebuild of a student TimelineJS + StoryMapJS project, for the MICRI
+Custom rebuilds of student TimelineJS + StoryMapJS projects, for the MICRI
 data-storytelling workshop. Not a TimelineJS clone — a dataviz / creative-coding
 exercise: a full-screen map ([MapLibre GL](https://maplibre.org/)) driven by a
 timeline strip drawn with [D3](https://d3js.org/), built with Vue 3 + Vite.
+The app hosts **multiple stories** (one per team) behind a switcher in the
+header; each story is shareable by URL hash (e.g. `#the-world-wide-web`).
 
 ## Run it
 
@@ -15,13 +17,17 @@ npm run build    # static site in dist/ — host it anywhere
 
 ## How it works
 
-- [public/data/the-digital-border.csv](public/data/the-digital-border.csv) — the data.
-  It's the TimelineJS spreadsheet export **plus three extra columns: `Lat`, `Lon`, `Zoom`**
-  (merged in from the StoryMapJS export). That's the whole trick: your timeline
-  spreadsheet becomes a map dataset by adding three columns.
-- [src/composables/useStory.js](src/composables/useStory.js) — loads the CSV with `d3.csv`,
-  parses dates and media, and holds the one piece of shared state: `activeIndex`,
-  which event is selected.
+- [public/data/stories.json](public/data/stories.json) — the story registry: one
+  `{ id, title, file }` entry per story CSV.
+- [public/data/the-digital-border.csv](public/data/the-digital-border.csv) and
+  [public/data/the-world-wide-web.csv](public/data/the-world-wide-web.csv) — the data.
+  Each is a TimelineJS spreadsheet export **plus five extra columns: `Lat`, `Lon`,
+  `Zoom`, `Source`, `Source URL`**. That's the whole trick: your timeline spreadsheet
+  becomes a mapped, sourced dataset by adding five columns. The title row's `Text`
+  is the story intro; every event's source renders as a link in its card.
+- [src/composables/useStory.js](src/composables/useStory.js) — loads the registry and
+  the current story's CSV with `d3.csv`, parses dates/media/sources, syncs the story
+  to the URL hash, and holds the shared state: `currentStoryId` and `activeIndex`.
 - [src/components/Timeline.vue](src/components/Timeline.vue) — the D3 exercise. A time
   scale, an axis, and one range bar per event; overlapping events stack onto lanes.
   Clicking a bar sets `activeIndex`.
@@ -33,20 +39,19 @@ npm run build    # static site in dist/ — host it anywhere
 Arrow keys (← →) also step through the story. Going back past the first event
 returns to the overview.
 
-## Use your own data
+## Add your own story
 
 1. Export your TimelineJS Google Sheet as CSV.
-2. Add `Lat`, `Lon`, `Zoom` columns and fill them for every event
-   (right-click a spot on [OpenStreetMap](https://www.openstreetmap.org) → "Show address"
-   to get coordinates).
-3. Replace the file in `public/data/` and point the filename in
-   `src/composables/useStory.js` at it.
+2. Add `Lat`, `Lon`, `Zoom`, `Source`, `Source URL` columns and fill them for every
+   event (right-click a spot on [OpenStreetMap](https://www.openstreetmap.org) →
+   "Show address" to get coordinates). Put your story intro in the title row's `Text`.
+3. Drop the file in `public/data/` and add one line to
+   [public/data/stories.json](public/data/stories.json). Done — it appears in the
+   header switcher, at its own `#your-story-id` URL.
 
 ## Teaching notes
 
 - The raw student exports are untouched in [data/](data/): the TimelineJS CSV and the
   StoryMapJS JSON. Compare them with the merged file — merging *is* a data-cleaning lesson.
 - One event had no location in the StoryMapJS export (the Apartheid "Dompas"); it was
-  filled in as Johannesburg during the merge. And the "Paris Conference" pin sits in
-  **Geneva** (the League of Nations HQ) — is that a mistake or a choice? Every map takes
-  sides; even a demo dataset has a gap to find.
+  filled in as Johannesburg during the merge.

@@ -58,6 +58,8 @@ const bars = computed(() => {
       x,
       w,
       label,
+      left, // full horizontal extent: bar + label, for the hit target
+      right,
       laneTop: MARGIN.top + lane * LANE_H,
       labelX: flip ? x + w : x,
       anchor: flip ? 'end' : 'start',
@@ -109,7 +111,7 @@ watch(scale, renderAxis, { flush: 'post' })
         @keydown.space.prevent="select(b.i)"
       >
         <title>{{ b.headline }} · {{ b.displayDate }}</title>
-        <rect class="hit" :x="b.x - 6" :y="b.laneTop" :width="b.w + 12" :height="LANE_H" />
+        <rect class="hit" :x="b.left - 6" :y="b.laneTop" :width="b.right - b.left + 12" :height="LANE_H" />
         <text class="label" :x="b.labelX" :y="b.laneTop + 12" :text-anchor="b.anchor">
           {{ b.label }}
         </text>

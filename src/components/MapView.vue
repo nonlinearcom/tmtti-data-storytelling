@@ -10,7 +10,6 @@ const container = ref(null)
 const mapReady = ref(false)
 let map
 let markers = []
-let built = false
 
 const MAP_STYLE = 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json'
 
@@ -20,10 +19,32 @@ function pad() {
   return { top: 90, bottom: 40, left: 40, right: w > 760 ? 420 : 40 }
 }
 
+// The hemisphere that shows the most markers: circular mean of the longitudes
+// (a plain average breaks across the date line), simple mean of the latitudes.
+function storyCenter() {
+  let x = 0
+  let y = 0
+  let lat = 0
+  events.value.forEach((e) => {
+    const r = (e.lon * Math.PI) / 180
+    x += Math.cos(r)
+    y += Math.sin(r)
+    lat += e.lat
+  })
+  return [(Math.atan2(y, x) * 180) / Math.PI, lat / events.value.length]
+}
+
 function overview(animate = true) {
   const b = new maplibregl.LngLatBounds()
   events.value.forEach((e) => b.extend([e.lon, e.lat]))
-  map.fitBounds(b, { padding: pad(), duration: animate ? 1400 : 0, maxZoom: 5 })
+  // symmetric padding: the globe sits centered in the viewport, even if the
+  // event card overlaps its right edge
+  const opts = { padding: 60, duration: animate ? 1400 : 0, maxZoom: 5 }
+  const cam = map.cameraForBounds(b, opts)
+  if (!cam) return map.fitBounds(b, opts)
+  // keep the zoom fitBounds would pick, but centre the globe on the story's
+  // "busiest" hemisphere — a story spanning >180° can't show every marker anyway
+  map.flyTo({ ...cam, center: storyCenter(), ...opts, essential: true })
 }
 
 function buildStoryLayer() {
@@ -63,10 +84,19 @@ function buildStoryLayer() {
       ev.stopPropagation()
       select(i)
     })
-    markers.push(new maplibregl.Marker({ element: el }).setLngLat([e.lon, e.lat]).addTo(map))
+    markers.push(
+      new maplibregl.Marker({ element: el, opacityWhenCovered: '0' }) // fully hide far-side markers
+        .setLngLat([e.lon, e.lat])
+        .addTo(map)
+    )
   })
+}
 
-  overview(false)
+function clearStory() {
+  markers.forEach((m) => m.remove())
+  markers = []
+  if (map.getLayer('story-line')) map.removeLayer('story-line')
+  if (map.getSource('story-line')) map.removeSource('story-line')
 }
 
 onMounted(() => {
@@ -79,6 +109,10 @@ onMounted(() => {
   })
   map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'bottom-right')
   if (import.meta.env.DEV) window.__map = map // poke at it in the console
+  map.on('style.load', () => {
+    // globe at low zooms, seamlessly flattening to mercator as you zoom in
+    map.setProjection({ type: 'globe' })
+  })
   map.on('load', () => {
     mapReady.value = true
   })
@@ -86,16 +120,18 @@ onMounted(() => {
 
 onBeforeUnmount(() => map?.remove())
 
-// The map and the CSV load in parallel; build the story layer when both are in.
+// The map and the CSV load in parallel; (re)build the story layer when both
+// are in — and again every time the events array is swapped by a story switch.
 watch([mapReady, events], () => {
-  if (mapReady.value && events.value.length && !built) {
-    built = true
-    buildStoryLayer()
-  }
+  if (!mapReady.value || !events.value.length) return
+  const isSwitch = markers.length > 0
+  clearStory()
+  buildStoryLayer()
+  overview(isSwitch) // first story: jump straight there; switch: fly over
 })
 
 watch(activeIndex, (i) => {
-  if (!map || !built) return
+  if (!map || !markers.length) return
   markers.forEach((m, idx) => m.getElement().classList.toggle('active', idx === i))
   const e = events.value[i]
   if (!e) {
@@ -151,6 +187,10 @@ watch(activeIndex, (i) => {
 }
 .story-marker:hover .dot {
   transform: scale(1.12);
+}
+/* a marker hidden behind the globe must not catch clicks either */
+.story-marker[style*='opacity: 0;'] {
+  pointer-events: none;
 }
 .story-marker.active {
   z-index: 2;
