@@ -19,21 +19,6 @@ function pad() {
   return { top: 90, bottom: 40, left: 40, right: w > 760 ? 420 : 40 }
 }
 
-// The hemisphere that shows the most markers: circular mean of the longitudes
-// (a plain average breaks across the date line), simple mean of the latitudes.
-function storyCenter() {
-  let x = 0
-  let y = 0
-  let lat = 0
-  events.value.forEach((e) => {
-    const r = (e.lon * Math.PI) / 180
-    x += Math.cos(r)
-    y += Math.sin(r)
-    lat += e.lat
-  })
-  return [(Math.atan2(y, x) * 180) / Math.PI, lat / events.value.length]
-}
-
 function overview(animate = true) {
   const b = new maplibregl.LngLatBounds()
   events.value.forEach((e) => b.extend([e.lon, e.lat]))
@@ -42,9 +27,10 @@ function overview(animate = true) {
   const opts = { padding: 60, duration: animate ? 1400 : 0, maxZoom: 5 }
   const cam = map.cameraForBounds(b, opts)
   if (!cam) return map.fitBounds(b, opts)
-  // keep the zoom fitBounds would pick, but centre the globe on the story's
-  // "busiest" hemisphere — a story spanning >180° can't show every marker anyway
-  map.flyTo({ ...cam, center: storyCenter(), ...opts, essential: true })
+  // keep the zoom fitBounds would pick, but turn the globe to where the story
+  // begins — events are chronological, so [0] is each story's first chapter
+  const first = events.value[0]
+  map.flyTo({ ...cam, center: [first.lon, first.lat], ...opts, essential: true })
 }
 
 function buildStoryLayer() {
