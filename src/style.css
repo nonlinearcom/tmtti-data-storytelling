@@ -1,0 +1,38 @@
+/* Design tokens — light mode only (the basemap is light).
+   All events are one "series", so the timeline uses a single hue:
+   --accent for the active event, --accent-soft for the rest.
+   Every bar carries a visible text label, so color never works alone. */
+:root {
+  --surface-1: #fcfcfb;
+  --surface-veil: rgba(252, 252, 251, 0.92);
+  --text-primary: #0b0b0b;
+  --text-secondary: #52514e;
+  --text-muted: #898781;
+  --gridline: #e1e0d9;
+  --baseline: #c3c2b7;
+  --accent: #2a78d6;
+  --accent-strong: #1c5cab;
+  --accent-soft: #86b6ef;
+  --border: rgba(11, 11, 11, 0.1);
+  --shadow: 0 2px 12px rgba(11, 11, 11, 0.12);
+  --radius: 8px;
+  --font: system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  margin: 0;
+  height: 100%;
+  font-family: var(--font);
+  color: var(--text-primary);
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
