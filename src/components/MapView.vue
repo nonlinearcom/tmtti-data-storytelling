@@ -40,15 +40,21 @@ function overview(animate = true) {
 }
 
 function buildStoryLayer() {
+  // one dashed route per story, in that story's color
+  const byStory = new Map()
+  events.value.forEach((e) => {
+    if (!byStory.has(e.storyId)) byStory.set(e.storyId, { color: e.color, coords: [] })
+    byStory.get(e.storyId).coords.push([e.lon, e.lat])
+  })
   map.addSource('story-line', {
     type: 'geojson',
     data: {
-      type: 'Feature',
-      properties: {},
-      geometry: {
-        type: 'LineString',
-        coordinates: events.value.map((e) => [e.lon, e.lat]),
-      },
+      type: 'FeatureCollection',
+      features: [...byStory.values()].map((s) => ({
+        type: 'Feature',
+        properties: { color: s.color },
+        geometry: { type: 'LineString', coordinates: s.coords },
+      })),
     },
   })
   map.addLayer({
@@ -56,10 +62,10 @@ function buildStoryLayer() {
     type: 'line',
     source: 'story-line',
     paint: {
-      'line-color': '#898781',
+      'line-color': ['get', 'color'],
       'line-width': 1.5,
       'line-dasharray': [1.5, 2.5],
-      'line-opacity': 0.9,
+      'line-opacity': 0.7,
     },
   })
 
@@ -67,6 +73,7 @@ function buildStoryLayer() {
     const el = document.createElement('button')
     el.className = 'story-marker'
     el.type = 'button'
+    el.style.setProperty('--story-color', e.color)
     el.setAttribute('aria-label', `${e.headline} (${e.displayDate})`)
     const dot = document.createElement('span')
     dot.className = 'dot'
@@ -134,7 +141,9 @@ async function loadShapes(evts, token) {
             : gj.type === 'Feature'
               ? [gj]
               : [{ type: 'Feature', properties: {}, geometry: gj }]
-        fs.forEach((f) => features.push({ ...f, properties: { ...f.properties, eventIndex: i } }))
+        fs.forEach((f) =>
+          features.push({ ...f, properties: { ...f.properties, eventIndex: i, color: e.color } })
+        )
         shapeBoxes[i] = bboxOf(fs)
       } catch (err) {
         console.warn(`Shape "${e.shape}" (event ${i + 1}) could not be loaded — skipping.`, err)
@@ -155,7 +164,7 @@ async function loadShapes(evts, token) {
       type: 'fill',
       source: 'story-shapes',
       filter,
-      paint: { 'fill-color': '#2a78d6', 'fill-opacity': 0.12 },
+      paint: { 'fill-color': ['get', 'color'], 'fill-opacity': 0.12 },
     },
     'story-line' // areas sit beneath the dashed story line
   )
@@ -165,7 +174,7 @@ async function loadShapes(evts, token) {
       type: 'line',
       source: 'story-shapes',
       filter,
-      paint: { 'line-color': '#2a78d6', 'line-width': 1.5, 'line-opacity': 0.6 },
+      paint: { 'line-color': ['get', 'color'], 'line-width': 1.5, 'line-opacity': 0.6 },
     },
     'story-line'
   )
@@ -178,7 +187,7 @@ async function loadShapes(evts, token) {
       filter: pointFilter,
       paint: {
         'circle-radius': 5,
-        'circle-color': '#2a78d6',
+        'circle-color': ['get', 'color'],
         'circle-opacity': 0.85,
         'circle-stroke-color': '#fcfcfb',
         'circle-stroke-width': 1.5,
@@ -287,8 +296,8 @@ watch(activeIndex, (i) => {
   height: 26px;
   border-radius: 50%;
   background: var(--surface-1);
-  color: var(--accent-strong);
-  border: 2px solid var(--accent);
+  color: var(--story-color, var(--accent-strong));
+  border: 2px solid var(--story-color, var(--accent));
   font: 600 12px var(--font);
   display: grid;
   place-items: center;
@@ -306,9 +315,9 @@ watch(activeIndex, (i) => {
   z-index: 2;
 }
 .story-marker.active .dot {
-  background: var(--accent);
+  background: var(--story-color, var(--accent));
   color: #fff;
-  border-color: var(--accent-strong);
+  border-color: var(--story-color, var(--accent-strong));
   transform: scale(1.18);
 }
 </style>

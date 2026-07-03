@@ -1,13 +1,19 @@
 <script setup>
 import { useStory } from '../composables/useStory'
 
-const { title, events, activeIndex, activeEvent, next, prev } = useStory()
+const { title, events, activeIndex, activeEvent, selectedIds, selectedStories, next, prev } =
+  useStory()
 </script>
 
 <template>
   <aside class="card" aria-live="polite">
     <template v-if="activeEvent">
-      <p class="kicker">{{ activeIndex + 1 }} / {{ events.length }} · {{ activeEvent.displayDate }}</p>
+      <p class="kicker">
+        <template v-if="selectedIds.length > 1">
+          <span class="chip" :style="{ background: activeEvent.color }" />{{ activeEvent.storyTitle }} ·
+        </template>
+        {{ activeIndex + 1 }} / {{ events.length }} · {{ activeEvent.displayDate }}
+      </p>
       <h2>{{ activeEvent.headline }}</h2>
       <figure v-if="activeEvent.media">
         <img
@@ -38,10 +44,17 @@ const { title, events, activeIndex, activeEvent, next, prev } = useStory()
       <p class="kicker">MICRI data-storytelling workshop</p>
       <h2>{{ title?.headline || 'TMTTI' }}</h2>
       <div class="body">
-        <div v-if="title?.text" v-html="title.text"></div>
+        <div v-if="selectedIds.length > 1" class="story-list">
+          <p v-for="s in selectedStories" :key="s.id">
+            <span class="chip" :style="{ background: s.color }" />{{ s.title }} ·
+            {{ s.count }} events
+          </p>
+        </div>
+        <div v-else-if="title?.text" v-html="title.text"></div>
         <p>
-          Click a bar on the timeline — or press <kbd>→</kbd> — to move through the story. Each
-          event keeps its date range, its place, and its source.
+          Click a bar on the timeline — or press <kbd>→</kbd> — to move through the
+          {{ selectedIds.length > 1 ? 'combined chronology' : 'story' }}. Each event keeps its
+          date range, its place, and its source.
         </p>
       </div>
     </template>
@@ -76,6 +89,17 @@ const { title, events, activeIndex, activeEvent, next, prev } = useStory()
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--text-muted);
+  margin: 0 0 6px;
+}
+.chip {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 5px;
+  vertical-align: baseline;
+}
+.story-list p {
   margin: 0 0 6px;
 }
 h2 {

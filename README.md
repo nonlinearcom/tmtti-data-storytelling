@@ -4,8 +4,11 @@ Custom rebuilds of student TimelineJS + StoryMapJS projects, for the MICRI
 data-storytelling workshop. Not a TimelineJS clone — a dataviz / creative-coding
 exercise: a full-screen map ([MapLibre GL](https://maplibre.org/)) driven by a
 timeline strip drawn with [D3](https://d3js.org/), built with Vue 3 + Vite.
-The app hosts **multiple stories** (one per team) behind a switcher in the
-header; each story is shareable by URL hash (e.g. `#the-world-wide-web`).
+The app hosts **multiple stories** (one per team) behind a checkbox dropdown in
+the header — check several to overlay them on one map and timeline, each story
+in its own identity color (assigned by position in `stories.json`). Views are
+shareable by URL hash: one story (`#the-world-wide-web`) or a combination
+(`#the-digital-border+the-world-wide-web`).
 
 ## Run it
 

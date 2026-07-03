@@ -1,13 +1,15 @@
 import { ref, computed } from 'vue'
 import * as d3 from 'd3'
+import { storyColor } from '../storyColors'
 
-// Module-level state: every component calling useStory() shares the same story.
-const stories = ref([])
-const currentStoryId = ref(null)
-const title = ref(null)
-const events = ref([])
+// Module-level state: every component calling useStory() shares the same view.
+const stories = ref([]) // manifest entries: {id, title, file, color}
+const selectedIds = ref([]) // checked stories, kept in manifest order
 const activeIndex = ref(-1) // -1 = overview (no event selected yet)
 const error = ref(null)
+
+const cache = new Map() // story id -> { title, events } after first fetch
+const loadedTick = ref(0) // bumped when a fetch lands, so computeds see the cache
 
 const fmtFull = d3.timeFormat('%b %-d, %Y')
 const fmtMonth = d3.timeFormat('%b %Y')
@@ -33,11 +35,14 @@ function cleanHtml(html = '') {
     .trim()
 }
 
-function parseRow(row, i) {
+function parseRow(row, i, story) {
   const startLabel = fmt(row.Year, row.Month, row.Day)
   const endLabel = fmt(row['End Year'], row['End Month'], row['End Day'])
   return {
-    id: i,
+    id: `${story.id}:${i}`,
+    storyId: story.id,
+    storyTitle: story.title,
+    color: story.color,
     type: (row.Type || '').trim().toLowerCase(),
     headline: (row.Headline || '').trim(),
     text: cleanHtml(row.Text),
@@ -65,52 +70,112 @@ function parseRow(row, i) {
   }
 }
 
-function storyIdFromHash() {
-  return decodeURIComponent(window.location.hash.replace(/^#\/?/, ''))
+async function ensureLoaded(story) {
+  if (cache.has(story.id)) return
+  const rows = await d3.csv(`${import.meta.env.BASE_URL}data/${story.file}`)
+  const parsed = rows.map((row, i) => parseRow(row, i, story))
+  cache.set(story.id, {
+    title: parsed.find((d) => d.type === 'title') ?? null,
+    events: parsed.filter((d) => d.type !== 'title' && d.start),
+  })
+  loadedTick.value++
 }
 
-async function loadStory(id) {
-  const story = stories.value.find((s) => s.id === id)
-  if (!story || currentStoryId.value === id) return
-  currentStoryId.value = id
+function idsFromHash() {
+  return decodeURIComponent(window.location.hash.replace(/^#\/?/, ''))
+    .split('+')
+    .filter(Boolean)
+}
+
+function syncHashAndTitle() {
+  window.location.hash = selectedIds.value.join('+')
+  const names = stories.value
+    .filter((s) => selectedIds.value.includes(s.id))
+    .map((s) => s.title)
+  document.title = `${names.join(' × ')} — TMTTI`
+}
+
+// Resolve a set of story ids: load what's missing, keep manifest order, ≥1 story.
+async function applyIds(ids) {
+  const known = ids.filter((id) => stories.value.some((s) => s.id === id))
+  const target = known.length ? known : stories.value.length ? [stories.value[0].id] : []
   try {
-    const rows = await d3.csv(`${import.meta.env.BASE_URL}data/${story.file}`)
-    if (currentStoryId.value !== id) return // a newer switch won the race
-    const parsed = rows.map(parseRow)
-    title.value = parsed.find((d) => d.type === 'title') ?? null
-    events.value = parsed
-      .filter((d) => d.type !== 'title' && d.start)
-      .sort((a, b) => a.start - b.start)
-    activeIndex.value = -1
-    window.location.hash = id
-    document.title = `${story.title} — TMTTI`
+    await Promise.all(target.map((id) => ensureLoaded(stories.value.find((s) => s.id === id))))
   } catch (e) {
     error.value = e
-    console.error(`Could not load story "${id}":`, e)
+    console.error('Could not load stories:', e)
+    return
   }
+  selectedIds.value = stories.value.map((s) => s.id).filter((id) => target.includes(id))
+  activeIndex.value = -1
+  syncHashAndTitle()
+}
+
+function onHashChange() {
+  const ids = idsFromHash()
+  if (ids.join('+') === selectedIds.value.join('+')) return // our own write
+  applyIds(ids)
 }
 
 async function load() {
   try {
     const res = await fetch(`${import.meta.env.BASE_URL}data/stories.json`)
-    stories.value = await res.json()
-    window.addEventListener('hashchange', () => {
-      const id = storyIdFromHash()
-      if (stories.value.some((s) => s.id === id)) loadStory(id)
-    })
-    const initial = stories.value.find((s) => s.id === storyIdFromHash()) ?? stories.value[0]
-    if (initial) await loadStory(initial.id)
+    const list = await res.json()
+    stories.value = list.map((s, i) => ({ ...s, color: storyColor(i) }))
+    window.addEventListener('hashchange', onHashChange)
+    await applyIds(idsFromHash())
   } catch (e) {
     error.value = e
     console.error('Could not load stories manifest:', e)
   }
 }
 
+async function toggleStory(id) {
+  const story = stories.value.find((s) => s.id === id)
+  if (!story) return
+  if (selectedIds.value.includes(id)) {
+    if (selectedIds.value.length === 1) return // always keep one story
+    selectedIds.value = selectedIds.value.filter((x) => x !== id)
+  } else {
+    try {
+      await ensureLoaded(story)
+    } catch (e) {
+      error.value = e
+      console.error(`Could not load story "${id}":`, e)
+      return
+    }
+    selectedIds.value = stories.value
+      .map((s) => s.id)
+      .filter((sid) => sid === id || selectedIds.value.includes(sid))
+  }
+  activeIndex.value = -1
+  syncHashAndTitle()
+}
+
 export function useStory() {
+  // All checked stories' events, merged into one chronology.
+  const events = computed(() => {
+    loadedTick.value // re-run when a story finishes loading
+    return selectedIds.value
+      .flatMap((id) => cache.get(id)?.events ?? [])
+      .sort((a, b) => a.start - b.start)
+  })
+
+  const selectedStories = computed(() => {
+    loadedTick.value
+    return stories.value
+      .filter((s) => selectedIds.value.includes(s.id))
+      .map((s) => ({ ...s, count: cache.get(s.id)?.events.length ?? 0 }))
+  })
+
+  const title = computed(() => {
+    if (selectedIds.value.length === 1) return cache.get(selectedIds.value[0])?.title ?? null
+    if (selectedIds.value.length > 1)
+      return { headline: `${selectedIds.value.length} stories, one timeline`, text: '' }
+    return null
+  })
+
   const activeEvent = computed(() => events.value[activeIndex.value] ?? null)
-  const currentStory = computed(
-    () => stories.value.find((s) => s.id === currentStoryId.value) ?? null
-  )
 
   function select(i) {
     activeIndex.value = i
@@ -124,15 +189,15 @@ export function useStory() {
 
   return {
     stories,
-    currentStoryId,
-    currentStory,
+    selectedIds,
+    selectedStories,
     title,
     events,
     activeIndex,
     activeEvent,
     error,
     load,
-    loadStory,
+    toggleStory,
     select,
     next,
     prev,

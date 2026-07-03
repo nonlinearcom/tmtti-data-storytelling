@@ -122,7 +122,7 @@ watch(scale, renderAxis, { flush: 'post' })
         <text v-if="!compact" class="label" :x="b.labelX" :y="b.laneTop + 12" :text-anchor="b.anchor">
           {{ b.label }}
         </text>
-        <rect class="mark" :x="b.x" :y="b.barY" :width="b.w" :height="BAR_H" rx="4" />
+        <rect class="mark" :x="b.x" :y="b.barY" :width="b.w" :height="BAR_H" rx="4" :fill="b.color" />
       </g>
       <g ref="axisEl" class="axis" :transform="`translate(0, ${axisY})`" />
     </svg>
@@ -146,13 +146,14 @@ svg {
 .hit {
   fill: transparent;
 }
+/* the fill is the story's identity color; state is carried by opacity */
 .mark {
-  fill: var(--accent-soft);
-  transition: fill 0.15s;
+  opacity: 0.5;
+  transition: opacity 0.15s;
 }
 .bar:hover .mark,
 .bar.active .mark {
-  fill: var(--accent);
+  opacity: 1;
 }
 .bar:focus-visible .mark {
   stroke: var(--accent-strong);
