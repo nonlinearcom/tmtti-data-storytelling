@@ -42,7 +42,9 @@ watch(
           coordinates and sources, drawn with
           <a href="https://vuejs.org/" target="_blank" rel="noopener">Vue</a>,
           <a href="https://maplibre.org/" target="_blank" rel="noopener">MapLibre GL</a> and
-          <a href="https://d3js.org/" target="_blank" rel="noopener">D3</a>.
+          <a href="https://d3js.org/" target="_blank" rel="noopener">D3</a>.</p>
+        <p>
+          GitHub: <a href="https://github.com/nonlinearcom/tmtti-data-storytelling" target="_blank" rel="noopener">https://github.com/nonlinearcom/tmtti-data-storytelling</a>
         </p>
         <dl class="credits">
           <dt>Instructor</dt>
