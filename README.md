@@ -49,6 +49,22 @@ returns to the overview.
    [public/data/stories.json](public/data/stories.json). Done — it appears in the
    header switcher, at its own `#your-story-id` URL.
 
+### Give an event an area (optional)
+
+Some events aren't a point — a pass-law system covers a country, a supply chain
+covers a region. To draw that:
+
+1. Go to [geojson.io](https://geojson.io), draw a polygon (or drop markers for a
+   group of cities), then *Save → GeoJSON*. For real country borders, use
+   [geojson-maps.kyd.au](https://geojson-maps.kyd.au) (pick "low resolution").
+   If the file is big, simplify it at [mapshaper.org](https://mapshaper.org).
+2. Put the file in `public/data/shapes/` and write its name in the event's
+   `Shape` column.
+
+When that event is selected, its area fades in and the map frames it. See the
+Apartheid "Dompas" event in The Digital Border for a working example
+(`south-africa.geojson`). No file? The event just behaves as a normal point.
+
 ## Teaching notes
 
 - The raw student exports are untouched in [data/](data/): the TimelineJS CSV and the

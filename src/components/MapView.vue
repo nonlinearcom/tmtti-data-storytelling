@@ -81,8 +81,86 @@ function buildStoryLayer() {
 function clearStory() {
   markers.forEach((m) => m.remove())
   markers = []
-  if (map.getLayer('story-line')) map.removeLayer('story-line')
-  if (map.getSource('story-line')) map.removeSource('story-line')
+  for (const id of ['story-line', 'story-shape-fill', 'story-shape-line']) {
+    if (map.getLayer(id)) map.removeLayer(id)
+  }
+  for (const id of ['story-line', 'story-shapes']) {
+    if (map.getSource(id)) map.removeSource(id)
+  }
+  shapeBoxes = {}
+}
+
+// Optional per-event areas: the CSV's Shape column names a GeoJSON file in
+// public/data/shapes/. All shapes go into one source, tagged with their event
+// index; a filter shows only the active event's area.
+let shapeBoxes = {} // eventIndex → [[w, s], [e, n]], for fitBounds
+let buildToken = 0 // invalidates in-flight shape fetches on story switch
+
+function bboxOf(features) {
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity
+  const walk = (c) => {
+    if (typeof c[0] === 'number') {
+      minX = Math.min(minX, c[0])
+      minY = Math.min(minY, c[1])
+      maxX = Math.max(maxX, c[0])
+      maxY = Math.max(maxY, c[1])
+    } else c.forEach(walk)
+  }
+  features.forEach((f) => f.geometry && walk(f.geometry.coordinates))
+  return [
+    [minX, minY],
+    [maxX, maxY],
+  ]
+}
+
+async function loadShapes(evts, token) {
+  const features = []
+  await Promise.all(
+    evts.map(async (e, i) => {
+      if (!e.shape) return
+      try {
+        const res = await fetch(`${import.meta.env.BASE_URL}data/shapes/${e.shape}`)
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        const gj = await res.json()
+        const fs =
+          gj.type === 'FeatureCollection'
+            ? gj.features
+            : gj.type === 'Feature'
+              ? [gj]
+              : [{ type: 'Feature', properties: {}, geometry: gj }]
+        fs.forEach((f) => features.push({ ...f, properties: { ...f.properties, eventIndex: i } }))
+        shapeBoxes[i] = bboxOf(fs)
+      } catch (err) {
+        console.warn(`Shape "${e.shape}" (event ${i + 1}) could not be loaded — skipping.`, err)
+      }
+    })
+  )
+  if (token !== buildToken || !map || !features.length) return // story changed meanwhile
+  map.addSource('story-shapes', {
+    type: 'geojson',
+    data: { type: 'FeatureCollection', features },
+  })
+  const filter = ['==', ['get', 'eventIndex'], activeIndex.value]
+  map.addLayer(
+    {
+      id: 'story-shape-fill',
+      type: 'fill',
+      source: 'story-shapes',
+      filter,
+      paint: { 'fill-color': '#2a78d6', 'fill-opacity': 0.12 },
+    },
+    'story-line' // areas sit beneath the dashed story line
+  )
+  map.addLayer(
+    {
+      id: 'story-shape-line',
+      type: 'line',
+      source: 'story-shapes',
+      filter,
+      paint: { 'line-color': '#2a78d6', 'line-width': 1.5, 'line-opacity': 0.6 },
+    },
+    'story-line'
+  )
 }
 
 onMounted(() => {
@@ -111,26 +189,39 @@ onBeforeUnmount(() => map?.remove())
 watch([mapReady, events], () => {
   if (!mapReady.value || !events.value.length) return
   const isSwitch = markers.length > 0
+  buildToken++
   clearStory()
   buildStoryLayer()
+  loadShapes(events.value, buildToken)
   overview(isSwitch) // first story: jump straight there; switch: fly over
 })
 
 watch(activeIndex, (i) => {
   if (!map || !markers.length) return
   markers.forEach((m, idx) => m.getElement().classList.toggle('active', idx === i))
+  if (map.getLayer('story-shape-fill')) {
+    const filter = ['==', ['get', 'eventIndex'], i]
+    map.setFilter('story-shape-fill', filter)
+    map.setFilter('story-shape-line', filter)
+  }
   const e = events.value[i]
   if (!e) {
     overview()
     return
   }
-  map.flyTo({
-    center: [e.lon, e.lat],
-    zoom: Math.min(e.zoom ?? 10, 12),
-    padding: pad(),
-    speed: 0.8,
-    essential: true,
-  })
+  const box = shapeBoxes[i]
+  if (box) {
+    // an event with an area frames the whole area, not just its marker
+    map.fitBounds(box, { padding: pad(), maxZoom: e.zoom ?? 12, duration: 2200, essential: true })
+  } else {
+    map.flyTo({
+      center: [e.lon, e.lat],
+      zoom: Math.min(e.zoom ?? 10, 12),
+      padding: pad(),
+      speed: 0.8,
+      essential: true,
+    })
+  }
 })
 </script>
 

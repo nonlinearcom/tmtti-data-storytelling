@@ -58,6 +58,7 @@ function parseRow(row, i) {
       row.Source || row['Source URL']
         ? { label: row.Source || row['Source URL'], url: row['Source URL'] || null }
         : null,
+    shape: (row.Shape || '').trim() || null, // GeoJSON filename in public/data/shapes/
     lat: row.Lat ? +row.Lat : null,
     lon: row.Lon ? +row.Lon : null,
     zoom: row.Zoom ? +row.Zoom : 4,
