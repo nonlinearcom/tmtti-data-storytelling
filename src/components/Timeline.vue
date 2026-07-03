@@ -27,9 +27,10 @@ const scale = computed(() => {
     .range([MARGIN.left, width.value - MARGIN.right])
 })
 
-// Narrow screens get a compact, bars-only timeline: no labels (the numbered
-// markers and the event card carry identity) and tighter lanes.
-const compact = computed(() => width.value < 640)
+// Narrow screens — and big merged chronologies — get a compact, bars-only
+// timeline: no labels (the numbered markers and the event card carry identity)
+// and tighter lanes. Labeled lanes with 20+ events would swallow the viewport.
+const compact = computed(() => width.value < 640 || events.value.length > 18)
 const laneH = computed(() => (compact.value ? 16 : LANE_H))
 
 // Events overlap in time, so they stack on lanes: each event takes the first
