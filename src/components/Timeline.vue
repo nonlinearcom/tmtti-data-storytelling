@@ -27,6 +27,11 @@ const scale = computed(() => {
     .range([MARGIN.left, width.value - MARGIN.right])
 })
 
+// Narrow screens get a compact, bars-only timeline: no labels (the numbered
+// markers and the event card carry identity) and tighter lanes.
+const compact = computed(() => width.value < 640)
+const laneH = computed(() => (compact.value ? 16 : LANE_H))
+
 // Events overlap in time, so they stack on lanes: each event takes the first
 // lane that is free again before it starts. "Free" is measured in pixels, not
 // dates — an event occupies its bar AND its label, whichever reaches further.
@@ -41,7 +46,7 @@ const bars = computed(() => {
     let label = `${i + 1} · ${e.headline}`
     const maxChars = Math.max(Math.floor(avail / CHAR_W), 6)
     if (label.length > maxChars) label = label.slice(0, maxChars - 1) + '…'
-    const labelW = label.length * CHAR_W
+    const labelW = compact.value ? 0 : label.length * CHAR_W
     const left = flip ? Math.min(x, x + w - labelW) : x
     const right = flip ? x + w : x + Math.max(w, labelW)
     let lane = laneFree.findIndex((freeAt) => freeAt < left - 16)
@@ -51,6 +56,7 @@ const bars = computed(() => {
     } else {
       laneFree[lane] = right
     }
+    const laneTop = MARGIN.top + lane * laneH.value
     return {
       ...e,
       i,
@@ -60,7 +66,8 @@ const bars = computed(() => {
       label,
       left, // full horizontal extent: bar + label, for the hit target
       right,
-      laneTop: MARGIN.top + lane * LANE_H,
+      laneTop,
+      barY: laneTop + (compact.value ? 3 : 17),
       labelX: flip ? x + w : x,
       anchor: flip ? 'end' : 'start',
     }
@@ -68,7 +75,7 @@ const bars = computed(() => {
 })
 
 const laneCount = computed(() => Math.max(1, ...bars.value.map((b) => b.lane + 1)))
-const axisY = computed(() => MARGIN.top + laneCount.value * LANE_H)
+const axisY = computed(() => MARGIN.top + laneCount.value * laneH.value)
 const height = computed(() => axisY.value + AXIS_H)
 
 function renderAxis() {
@@ -111,11 +118,11 @@ watch(scale, renderAxis, { flush: 'post' })
         @keydown.space.prevent="select(b.i)"
       >
         <title>{{ b.headline }} · {{ b.displayDate }}</title>
-        <rect class="hit" :x="b.left - 6" :y="b.laneTop" :width="b.right - b.left + 12" :height="LANE_H" />
-        <text class="label" :x="b.labelX" :y="b.laneTop + 12" :text-anchor="b.anchor">
+        <rect class="hit" :x="b.left - 6" :y="b.laneTop" :width="b.right - b.left + 12" :height="laneH" />
+        <text v-if="!compact" class="label" :x="b.labelX" :y="b.laneTop + 12" :text-anchor="b.anchor">
           {{ b.label }}
         </text>
-        <rect class="mark" :x="b.x" :y="b.laneTop + 17" :width="b.w" :height="BAR_H" rx="4" />
+        <rect class="mark" :x="b.x" :y="b.barY" :width="b.w" :height="BAR_H" rx="4" />
       </g>
       <g ref="axisEl" class="axis" :transform="`translate(0, ${axisY})`" />
     </svg>
