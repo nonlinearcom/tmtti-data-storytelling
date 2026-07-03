@@ -13,24 +13,30 @@ let markers = []
 
 const MAP_STYLE = 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json'
 
-// Keep the camera target clear of the header and the event card.
-function pad() {
+// Shift the camera target left/down so it stays clear of the event card.
+// A per-call offset, deliberately NOT camera padding: MapLibre keeps padding as
+// sticky state (and strands it mid-value on interrupted flights), which was
+// leaving the overview globe off-center after visiting an event.
+function cardOffset() {
   const w = container.value?.clientWidth ?? 1000
-  return { top: 90, bottom: 40, left: 40, right: w > 760 ? 420 : 40 }
+  return w > 760 ? [-190, 25] : [0, 0]
 }
 
 function overview(animate = true) {
   const b = new maplibregl.LngLatBounds()
   events.value.forEach((e) => b.extend([e.lon, e.lat]))
-  // symmetric padding: the globe sits centered in the viewport, even if the
-  // event card overlaps its right edge
-  const opts = { padding: 60, duration: animate ? 1400 : 0, maxZoom: 5 }
-  const cam = map.cameraForBounds(b, opts)
-  if (!cam) return map.fitBounds(b, opts)
-  // keep the zoom fitBounds would pick, but turn the globe to where the story
-  // begins — events are chronological, so [0] is each story's first chapter
+  // cameraForBounds only supplies the zoom (with a 60px margin); the globe is
+  // centered in the viewport — the card may overlap its right edge, by design.
+  const cam = map.cameraForBounds(b, { padding: 60, maxZoom: 5 })
+  // turn the globe to where the story begins — events are chronological, so
+  // [0] is each story's first chapter
   const first = events.value[0]
-  map.flyTo({ ...cam, center: [first.lon, first.lat], ...opts, essential: true })
+  map.flyTo({
+    center: [first.lon, first.lat],
+    zoom: cam?.zoom ?? 1.4,
+    duration: animate ? 1400 : 0,
+    essential: true,
+  })
 }
 
 function buildStoryLayer() {
@@ -81,7 +87,7 @@ function buildStoryLayer() {
 function clearStory() {
   markers.forEach((m) => m.remove())
   markers = []
-  for (const id of ['story-line', 'story-shape-fill', 'story-shape-line']) {
+  for (const id of ['story-line', 'story-shape-fill', 'story-shape-line', 'story-shape-point']) {
     if (map.getLayer(id)) map.removeLayer(id)
   }
   for (const id of ['story-line', 'story-shapes']) {
@@ -141,6 +147,8 @@ async function loadShapes(evts, token) {
     data: { type: 'FeatureCollection', features },
   })
   const filter = ['==', ['get', 'eventIndex'], activeIndex.value]
+  // circle layers draw a dot on EVERY vertex of polygons/lines too — restrict to real points
+  const pointFilter = ['all', ['==', ['geometry-type'], 'Point'], filter]
   map.addLayer(
     {
       id: 'story-shape-fill',
@@ -158,6 +166,23 @@ async function loadShapes(evts, token) {
       source: 'story-shapes',
       filter,
       paint: { 'line-color': '#2a78d6', 'line-width': 1.5, 'line-opacity': 0.6 },
+    },
+    'story-line'
+  )
+  // point features (a "group of cities" shape) render as dots
+  map.addLayer(
+    {
+      id: 'story-shape-point',
+      type: 'circle',
+      source: 'story-shapes',
+      filter: pointFilter,
+      paint: {
+        'circle-radius': 5,
+        'circle-color': '#2a78d6',
+        'circle-opacity': 0.85,
+        'circle-stroke-color': '#fcfcfb',
+        'circle-stroke-width': 1.5,
+      },
     },
     'story-line'
   )
@@ -203,6 +228,7 @@ watch(activeIndex, (i) => {
     const filter = ['==', ['get', 'eventIndex'], i]
     map.setFilter('story-shape-fill', filter)
     map.setFilter('story-shape-line', filter)
+    map.setFilter('story-shape-point', ['all', ['==', ['geometry-type'], 'Point'], filter])
   }
   const e = events.value[i]
   if (!e) {
@@ -212,12 +238,19 @@ watch(activeIndex, (i) => {
   const box = shapeBoxes[i]
   if (box) {
     // an event with an area frames the whole area, not just its marker
-    map.fitBounds(box, { padding: pad(), maxZoom: e.zoom ?? 12, duration: 2200, essential: true })
+    const cam = map.cameraForBounds(box, { padding: 40, maxZoom: e.zoom ?? 12 })
+    map.flyTo({
+      center: cam?.center ?? [e.lon, e.lat],
+      zoom: cam?.zoom ?? 5,
+      offset: cardOffset(),
+      duration: 2200,
+      essential: true,
+    })
   } else {
     map.flyTo({
       center: [e.lon, e.lat],
       zoom: Math.min(e.zoom ?? 10, 12),
-      padding: pad(),
+      offset: cardOffset(),
       speed: 0.8,
       essential: true,
     })

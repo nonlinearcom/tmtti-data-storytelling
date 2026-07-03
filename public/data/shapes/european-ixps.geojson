@@ -1,0 +1,13 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    { "type": "Feature", "properties": { "name": "DE-CIX Frankfurt" }, "geometry": { "type": "Point", "coordinates": [8.6821, 50.1109] } },
+    { "type": "Feature", "properties": { "name": "AMS-IX Amsterdam" }, "geometry": { "type": "Point", "coordinates": [4.9041, 52.3676] } },
+    { "type": "Feature", "properties": { "name": "LINX London" }, "geometry": { "type": "Point", "coordinates": [-0.1276, 51.5072] } },
+    { "type": "Feature", "properties": { "name": "France-IX Paris" }, "geometry": { "type": "Point", "coordinates": [2.3522, 48.8566] } },
+    { "type": "Feature", "properties": { "name": "MIX Milan" }, "geometry": { "type": "Point", "coordinates": [9.19, 45.4642] } },
+    { "type": "Feature", "properties": { "name": "Netnod Stockholm" }, "geometry": { "type": "Point", "coordinates": [18.0686, 59.3293] } },
+    { "type": "Feature", "properties": { "name": "VIX Vienna" }, "geometry": { "type": "Point", "coordinates": [16.3738, 48.2082] } },
+    { "type": "Feature", "properties": { "name": "ESpanix Madrid" }, "geometry": { "type": "Point", "coordinates": [-3.7038, 40.4168] } }
+  ]
+}
