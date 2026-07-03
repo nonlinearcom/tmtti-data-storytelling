@@ -22,15 +22,21 @@ function cardOffset() {
   return w > 760 ? [-190, 25] : [0, 0]
 }
 
+// students' sheets mid-edit often lack coordinates — those events live on the
+// timeline only and are skipped by every map layer
+const located = () => events.value.filter((e) => e.lat != null && e.lon != null)
+
 function overview(animate = true) {
+  const locs = located()
+  if (!locs.length) return
   const b = new maplibregl.LngLatBounds()
-  events.value.forEach((e) => b.extend([e.lon, e.lat]))
+  locs.forEach((e) => b.extend([e.lon, e.lat]))
   // cameraForBounds only supplies the zoom (with a 60px margin); the globe is
   // centered in the viewport — the card may overlap its right edge, by design.
   const cam = map.cameraForBounds(b, { padding: 60, maxZoom: 5 })
   // turn the globe to where the story begins — events are chronological, so
-  // [0] is each story's first chapter
-  const first = events.value[0]
+  // the first located event is the story's first mappable chapter
+  const first = locs[0]
   map.flyTo({
     center: [first.lon, first.lat],
     zoom: cam?.zoom ?? 1.4,
@@ -42,7 +48,7 @@ function overview(animate = true) {
 function buildStoryLayer() {
   // one dashed route per story, in that story's color
   const byStory = new Map()
-  events.value.forEach((e) => {
+  located().forEach((e) => {
     if (!byStory.has(e.storyId)) byStory.set(e.storyId, { color: e.color, coords: [] })
     byStory.get(e.storyId).coords.push([e.lon, e.lat])
   })
@@ -70,6 +76,10 @@ function buildStoryLayer() {
   })
 
   events.value.forEach((e, i) => {
+    if (e.lat == null || e.lon == null) {
+      markers.push(null) // keep markers[] aligned with event indices
+      return
+    }
     const el = document.createElement('button')
     el.className = 'story-marker'
     el.type = 'button'
@@ -92,7 +102,7 @@ function buildStoryLayer() {
 }
 
 function clearStory() {
-  markers.forEach((m) => m.remove())
+  markers.forEach((m) => m?.remove())
   markers = []
   for (const id of ['story-line', 'story-shape-fill', 'story-shape-line', 'story-shape-point']) {
     if (map.getLayer(id)) map.removeLayer(id)
@@ -232,7 +242,7 @@ watch([mapReady, events], () => {
 
 watch(activeIndex, (i) => {
   if (!map || !markers.length) return
-  markers.forEach((m, idx) => m.getElement().classList.toggle('active', idx === i))
+  markers.forEach((m, idx) => m?.getElement().classList.toggle('active', idx === i))
   if (map.getLayer('story-shape-fill')) {
     const filter = ['==', ['get', 'eventIndex'], i]
     map.setFilter('story-shape-fill', filter)
@@ -244,6 +254,7 @@ watch(activeIndex, (i) => {
     overview()
     return
   }
+  if (e.lat == null || e.lon == null) return // unlocated: timeline/card only, camera stays
   const box = shapeBoxes[i]
   if (box) {
     // an event with an area frames the whole area, not just its marker
