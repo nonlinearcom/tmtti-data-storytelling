@@ -5,8 +5,8 @@ import { useStory } from '../composables/useStory'
 
 const { events, activeIndex, select } = useStory()
 
-const MARGIN = { top: 8, left: 16, right: 16 }
-const LANE_H = 32
+const MARGIN = { top: 14, left: 16, right: 16 } // top leaves headroom for lane-0 labels
+const LANE_H = 20
 const BAR_H = 10
 const AXIS_H = 26
 const CHAR_W = 6.5 // rough average character width of the 11px label font
@@ -28,15 +28,16 @@ const scale = computed(() => {
     .range([MARGIN.left, width.value - MARGIN.right])
 })
 
-// Narrow screens — and big merged chronologies — get a compact, bars-only
-// timeline: no labels (the numbered markers and the event card carry identity)
-// and tighter lanes. Labeled lanes with 20+ events would swallow the viewport.
-const compact = computed(() => width.value < 640 || events.value.length > 18)
+// Narrow (touch) screens get a compact, bars-only timeline: no hover, so no
+// labels (the numbered markers and the event card carry identity) and tighter
+// lanes.
+const compact = computed(() => width.value < 640)
 const laneH = computed(() => (compact.value ? 16 : LANE_H))
 
 // Events overlap in time, so they stack on lanes: each event takes the first
-// lane that is free again before it starts. "Free" is measured in pixels, not
-// dates — an event occupies its bar AND its label, whichever reaches further.
+// lane that is free again before it starts. "Free" is measured on the bar
+// alone — labels are transient (hover/active only), so they reserve no space
+// and lanes pack far tighter than with always-on text.
 const bars = computed(() => {
   const laneFree = [] // x at which each lane becomes free again
   return events.value.map((e, i) => {
@@ -48,10 +49,9 @@ const bars = computed(() => {
     let label = `${i + 1} · ${e.headline}`
     const maxChars = Math.max(Math.floor(avail / CHAR_W), 6)
     if (label.length > maxChars) label = label.slice(0, maxChars - 1) + '…'
-    const labelW = compact.value ? 0 : label.length * CHAR_W
-    const left = flip ? Math.min(x, x + w - labelW) : x
-    const right = flip ? x + w : x + Math.max(w, labelW)
-    let lane = laneFree.findIndex((freeAt) => freeAt < left - 16)
+    const left = x
+    const right = x + w
+    let lane = laneFree.findIndex((freeAt) => freeAt < left - 8)
     if (lane === -1) {
       laneFree.push(right)
       lane = laneFree.length - 1
@@ -66,10 +66,10 @@ const bars = computed(() => {
       x,
       w,
       label,
-      left, // full horizontal extent: bar + label, for the hit target
+      left,
       right,
       laneTop,
-      barY: laneTop + (compact.value ? 3 : 17),
+      barY: laneTop + (compact.value ? 3 : 5),
       labelX: flip ? x + w : x,
       anchor: flip ? 'end' : 'start',
     }
@@ -129,7 +129,7 @@ watch(scale, renderAxis, { flush: 'post' })
       >
         <title>{{ b.headline }} · {{ b.displayDate }}</title>
         <rect class="hit" :x="b.left - 6" :y="b.laneTop" :width="b.right - b.left + 12" :height="laneH" />
-        <text v-if="!compact" class="label" :x="b.labelX" :y="b.laneTop + 12" :text-anchor="b.anchor">
+        <text v-if="!compact" class="label" :x="b.labelX" :y="b.barY - 4" :text-anchor="b.anchor">
           {{ b.label }}
         </text>
         <rect class="mark" :x="b.x" :y="b.barY" :width="b.w" :height="BAR_H" rx="4" :fill="b.color" />
@@ -196,9 +196,23 @@ svg {
   stroke: var(--accent-strong);
   stroke-width: 2;
 }
+/* labels appear only for the hovered/active bar; a surface-colored halo
+   (paint-order) keeps them readable when they cross neighboring bars */
 .label {
   font-size: 11px;
   fill: var(--text-secondary);
+  opacity: 0;
+  paint-order: stroke;
+  stroke: var(--surface-1);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+  pointer-events: none;
+  transition: opacity 0.12s;
+}
+.bar:hover .label,
+.bar:focus-visible .label,
+.bar.active .label {
+  opacity: 1;
 }
 .bar.active .label {
   fill: var(--text-primary);
