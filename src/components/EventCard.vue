@@ -1,10 +1,68 @@
 <script setup>
+import { ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useStory } from '../composables/useStory'
 import StoryPicker from './StoryPicker.vue'
 
 const emit = defineEmits(['about'])
-const { title, events, activeIndex, activeEvent, selectedIds, selectedStories, next, prev } =
-  useStory()
+const { title, events, activeIndex, selectedIds, selectedStories, select } = useStory()
+
+// The feed drives activeIndex by scroll position (scrollytelling), and
+// activeIndex drives the feed when the change comes from the timeline, the
+// map markers or the arrow keys. Two guards stop the loop:
+// - ioIndex remembers where the feed's own scroll already points, so
+//   scroll-driven selects don't scroll the feed again;
+// - suppress mutes the observer while a programmatic smooth scroll flies
+//   past intermediate cards (refreshed by the scroll listener until settled).
+const feed = ref(null)
+let io
+let suppress = 0
+let ioIndex = -1
+const intersecting = new Map() // index -> entry top, for picking the band's topmost card
+
+function setupObserver() {
+  io?.disconnect()
+  intersecting.clear()
+  if (!feed.value) return
+  io = new IntersectionObserver(
+    (entries) => {
+      for (const en of entries) {
+        const idx = Number(en.target.dataset.index)
+        if (en.isIntersecting) intersecting.set(idx, en.boundingClientRect.top)
+        else intersecting.delete(idx)
+      }
+      if (Date.now() < suppress || !intersecting.size) return
+      const idx = [...intersecting.entries()].sort((a, b) => a[1] - b[1])[0][0]
+      ioIndex = idx
+      if (idx !== activeIndex.value) select(idx)
+    },
+    // only a band in the upper part of the panel counts as "being read"
+    { root: feed.value, rootMargin: '-20% 0px -65% 0px', threshold: 0 }
+  )
+  feed.value.querySelectorAll('.entry').forEach((el) => io.observe(el))
+}
+
+function onFeedScroll() {
+  if (Date.now() < suppress) suppress = Date.now() + 300
+}
+
+onMounted(() => {
+  setupObserver()
+  feed.value?.addEventListener('scroll', onFeedScroll, { passive: true })
+})
+watch(events, () => nextTick(setupObserver))
+onBeforeUnmount(() => {
+  io?.disconnect()
+  feed.value?.removeEventListener('scroll', onFeedScroll)
+})
+
+watch(activeIndex, (i) => {
+  if (i === ioIndex) return // the change came from our own scroll
+  const el = feed.value?.querySelector(`[data-index="${i}"]`)
+  if (!el) return
+  suppress = Date.now() + 900
+  ioIndex = i
+  el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+})
 </script>
 
 <template>
@@ -14,65 +72,57 @@ const { title, events, activeIndex, activeEvent, selectedIds, selectedStories, n
       <button class="about-btn" @click="emit('about')">About</button>
     </div>
 
-    <div class="scroll" aria-live="polite">
-    <template v-if="activeEvent">
-      <p class="kicker">
-        <template v-if="selectedIds.length > 1">
-          <span class="chip" :style="{ background: activeEvent.color }" />{{ activeEvent.storyTitle }} ·
-        </template>
-        {{ activeIndex + 1 }} / {{ events.length }} · {{ activeEvent.displayDate }}
-      </p>
-      <h2>{{ activeEvent.headline }}</h2>
-      <figure v-if="activeEvent.media">
-        <img
-          :src="activeEvent.media.url"
-          :alt="activeEvent.media.alt || activeEvent.media.caption"
-          loading="lazy"
-        />
-        <figcaption>
-          {{ activeEvent.media.caption }}
-          <span v-if="activeEvent.media.credit" class="credit">— {{ activeEvent.media.credit }}</span>
-        </figcaption>
-      </figure>
-      <div class="body" v-html="activeEvent.text"></div>
-      <p v-if="activeEvent.source" class="source">
-        Source:
-        <a
-          v-if="activeEvent.source.url"
-          :href="activeEvent.source.url"
-          target="_blank"
-          rel="noopener"
-          >{{ activeEvent.source.label }}</a
-        >
-        <span v-else>{{ activeEvent.source.label }}</span>
-      </p>
-    </template>
-
-    <template v-else>
-      <h2>{{ title?.headline || 'TMTTI' }}</h2>
-      <div class="body">
-        <div v-if="selectedIds.length > 1" class="story-list">
-          <p v-for="s in selectedStories" :key="s.id">
-            <span class="chip" :style="{ background: s.color }" />{{ s.title }} ·
-            {{ s.count }} events
+    <div ref="feed" class="feed">
+      <section class="entry" data-index="-1">
+        <p class="kicker">timeline × map · MICRI data-storytelling workshop</p>
+        <h2>{{ title?.headline || 'TMTTI' }}</h2>
+        <div class="body">
+          <div v-if="selectedIds.length > 1" class="story-list">
+            <p v-for="s in selectedStories" :key="s.id">
+              <span class="chip" :style="{ background: s.color }" />{{ s.title }} ·
+              {{ s.count }} events
+            </p>
+          </div>
+          <div v-else-if="title?.text" v-html="title.text"></div>
+          <p>
+            Scroll this panel — or press <kbd>→</kbd> — to move through the
+            {{ selectedIds.length > 1 ? 'combined chronology' : 'story' }}. Each event keeps its
+            date range, its place, and its source.
           </p>
         </div>
-        <div v-else-if="title?.text" v-html="title.text"></div>
-        <p>
-          Click a bar on the timeline — or press <kbd>→</kbd> — to move through the
-          {{ selectedIds.length > 1 ? 'combined chronology' : 'story' }}. Each event keeps its
-          date range, its place, and its source.
-        </p>
-      </div>
-    </template>
-    </div>
+      </section>
 
-    <nav v-if="events.length">
-      <button v-if="activeIndex > -1" @click="prev">← Back</button>
-      <button v-if="activeIndex < events.length - 1" class="primary" @click="next">
-        {{ activeIndex === -1 ? 'Start' : 'Next →' }}
-      </button>
-    </nav>
+      <section
+        v-for="(e, i) in events"
+        :key="e.id"
+        class="entry"
+        :data-index="i"
+        :aria-current="activeIndex === i ? 'true' : undefined"
+      >
+        <p class="kicker">
+          <template v-if="selectedIds.length > 1">
+            <span class="chip" :style="{ background: e.color }" />{{ e.storyTitle }} ·
+          </template>
+          {{ i + 1 }} / {{ events.length }} · {{ e.displayDate }}
+        </p>
+        <h2>{{ e.headline }}</h2>
+        <figure v-if="e.media">
+          <img :src="e.media.url" :alt="e.media.alt || e.media.caption" loading="lazy" />
+          <figcaption>
+            {{ e.media.caption }}
+            <span v-if="e.media.credit" class="credit">— {{ e.media.credit }}</span>
+          </figcaption>
+        </figure>
+        <div class="body" v-html="e.text"></div>
+        <p v-if="e.source" class="source">
+          Source:
+          <a v-if="e.source.url" :href="e.source.url" target="_blank" rel="noopener">{{
+            e.source.label
+          }}</a>
+          <span v-else>{{ e.source.label }}</span>
+        </p>
+      </section>
+    </div>
   </aside>
 </template>
 
@@ -85,7 +135,7 @@ const { title, events, activeIndex, activeEvent, selectedIds, selectedStories, n
   width: 33.33vw;
   min-width: 360px;
   max-width: calc(100vw - 32px);
-  max-height: calc(100% - 180px);
+  height: calc(100% - 32px);
   display: flex;
   flex-direction: column;
   background: var(--surface-1);
@@ -112,11 +162,25 @@ const { title, events, activeIndex, activeEvent, selectedIds, selectedStories, n
   border-color: var(--accent);
   color: var(--accent-strong);
 }
-/* only the reading area scrolls; toolbar and nav stay put */
-.scroll {
+/* the reading feed: one entry per event, soft-snapping to entry tops */
+.feed {
   min-height: 0;
+  flex: 1;
   overflow-y: auto;
-  padding: 14px 20px 2px;
+  scroll-snap-type: y proximity;
+  scroll-padding-top: 8px;
+}
+/* room after the last entry so short final cards can still reach the
+   observer's reading band at the top of the panel */
+.feed::after {
+  content: '';
+  display: block;
+  height: 40vh;
+}
+.entry {
+  padding: 14px 20px 16px;
+  border-bottom: 1px solid var(--gridline);
+  scroll-snap-align: start;
 }
 .kicker {
   font-size: 11px;
@@ -186,42 +250,6 @@ kbd {
   font-size: 12px;
   background: #fff;
 }
-nav {
-  flex: none;
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 12px 20px 14px;
-}
-/* Next/Start keeps its right-edge position even when Back is hidden */
-nav .primary {
-  margin-left: auto;
-}
-button {
-  border: 1px solid var(--border);
-  background: var(--surface-1);
-  border-radius: 6px;
-  padding: 7px 12px;
-  font-size: 13px;
-  color: var(--text-primary);
-}
-button:hover:not(:disabled) {
-  border-color: var(--accent);
-  color: var(--accent-strong);
-}
-button.primary {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #fff;
-}
-button.primary:hover:not(:disabled) {
-  background: var(--accent-strong);
-  color: #fff;
-}
-button:disabled {
-  opacity: 0.4;
-  cursor: default;
-}
 @media (max-width: 720px) {
   /* joins the app's flex column between map and timeline */
   .card {
@@ -229,6 +257,7 @@ button:disabled {
     width: auto;
     min-width: 0;
     max-width: none;
+    height: auto;
     max-height: 42vh;
     border-radius: 0;
     border-left: none;
@@ -238,11 +267,8 @@ button:disabled {
   .toolbar {
     padding: 8px 12px;
   }
-  .scroll {
-    padding: 12px 16px 2px;
-  }
-  nav {
-    padding: 10px 16px 12px;
+  .entry {
+    padding: 12px 16px 14px;
   }
 }
 </style>

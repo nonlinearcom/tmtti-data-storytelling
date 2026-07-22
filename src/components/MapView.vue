@@ -13,13 +13,23 @@ let markers = []
 
 const MAP_STYLE = 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json'
 
-// Shift the camera target left/down so it stays clear of the event card.
+// The timeline strip (left) and the reading card (right) float over the map;
+// measure them live so cameras aim at the visible band between the two.
+function overlays() {
+  const strip = document.querySelector('.timeline')?.getBoundingClientRect().width ?? 0
+  const card = document.querySelector('aside.card')?.getBoundingClientRect().width ?? 0
+  return { strip, card }
+}
+
+// Shift the camera target so it centers in the free middle band.
 // A per-call offset, deliberately NOT camera padding: MapLibre keeps padding as
 // sticky state (and strands it mid-value on interrupted flights), which was
 // leaving the overview globe off-center after visiting an event.
 function cardOffset() {
   const w = container.value?.clientWidth ?? 1000
-  return w > 760 ? [-190, 25] : [0, 0]
+  if (w <= 720) return [0, 0] // overlays sit in the flex column, not over the map
+  const { strip, card } = overlays()
+  return [(strip - card) / 2, 25]
 }
 
 // students' sheets mid-edit often lack coordinates — those events live on the
@@ -35,11 +45,13 @@ function overview(animate = true) {
   // centered in the viewport — the card may overlap its right edge, by design.
   const cam = map.cameraForBounds(b, { padding: 60, maxZoom: 5 })
   // turn the globe to where the story begins — events are chronological, so
-  // the first located event is the story's first mappable chapter
+  // the first located event is the story's first mappable chapter; the offset
+  // keeps the globe centered in the band between timeline and card
   const first = locs[0]
   map.flyTo({
     center: [first.lon, first.lat],
     zoom: cam?.zoom ?? 1.4,
+    offset: cardOffset(),
     duration: animate ? 1400 : 0,
     essential: true,
   })
@@ -299,12 +311,13 @@ watch(activeIndex, (i) => {
     })
   } else if (box) {
     // An event with an area frames the whole area, not just its marker.
-    // Instead of cardOffset's fixed nudge, reserve the card's real footprint
-    // (33.33vw, min 360px — keep in sync with EventCard.vue) as right padding,
-    // so wide shapes like the TAT-8 cable aren't half-hidden under the card.
+    // Instead of cardOffset's fixed nudge, reserve the overlays' measured
+    // footprints as padding so wide shapes like the TAT-8 cable aren't
+    // half-hidden under the card or the timeline strip.
     const w = container.value?.clientWidth ?? 1000
+    const { strip, card } = overlays()
     const padding =
-      w > 760 ? { top: 48, bottom: 48, left: 48, right: Math.max(360, w / 3) + 48 } : 40
+      w > 720 ? { top: 48, bottom: 48, left: strip + 24, right: card + 48 } : 40
     const cam = map.cameraForBounds(box, { padding, maxZoom: e.zoom ?? 12 })
     map.flyTo({
       center: cam?.center ?? [e.lon, e.lat],

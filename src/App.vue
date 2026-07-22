@@ -42,7 +42,14 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
   position: fixed;
   inset: 0;
   display: flex;
-  flex-direction: column;
+  /* desktop: the map is the only in-flow child (timeline and card float
+     above it); mobile stacks map / card / timeline as a column */
+  flex-direction: row;
   overflow: hidden;
+}
+@media (max-width: 720px) {
+  .app {
+    flex-direction: column;
+  }
 }
 </style>
