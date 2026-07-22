@@ -13,23 +13,21 @@ let markers = []
 
 const MAP_STYLE = 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json'
 
-// The timeline strip (left) and the reading card (right) float over the map;
-// measure them live so cameras aim at the visible band between the two.
-function overlays() {
-  const strip = document.querySelector('.timeline')?.getBoundingClientRect().width ?? 0
-  const card = document.querySelector('aside.card')?.getBoundingClientRect().width ?? 0
-  return { strip, card }
+// The reading card lies over the map's right side (the timeline strip is its
+// own column, already outside this container); measure the card live so
+// cameras aim at the visible band left of it.
+function cardWidth() {
+  return document.querySelector('aside.card')?.getBoundingClientRect().width ?? 0
 }
 
-// Shift the camera target so it centers in the free middle band.
+// Shift the camera target so it centers in the free band left of the card.
 // A per-call offset, deliberately NOT camera padding: MapLibre keeps padding as
 // sticky state (and strands it mid-value on interrupted flights), which was
 // leaving the overview globe off-center after visiting an event.
 function cardOffset() {
   const w = container.value?.clientWidth ?? 1000
-  if (w <= 720) return [0, 0] // overlays sit in the flex column, not over the map
-  const { strip, card } = overlays()
-  return [(strip - card) / 2, 25]
+  if (w <= 720) return [0, 0] // mobile: the card sits in the flex column, not over the map
+  return [-cardWidth() / 2, 25]
 }
 
 // students' sheets mid-edit often lack coordinates — those events live on the
@@ -311,13 +309,11 @@ watch(activeIndex, (i) => {
     })
   } else if (box) {
     // An event with an area frames the whole area, not just its marker.
-    // Instead of cardOffset's fixed nudge, reserve the overlays' measured
-    // footprints as padding so wide shapes like the TAT-8 cable aren't
-    // half-hidden under the card or the timeline strip.
+    // Instead of cardOffset's fixed nudge, reserve the card's measured
+    // footprint as right padding so wide shapes like the TAT-8 cable aren't
+    // half-hidden under it.
     const w = container.value?.clientWidth ?? 1000
-    const { strip, card } = overlays()
-    const padding =
-      w > 720 ? { top: 48, bottom: 48, left: strip + 24, right: card + 48 } : 40
+    const padding = w > 720 ? { top: 48, bottom: 48, left: 24, right: cardWidth() + 48 } : 40
     const cam = map.cameraForBounds(box, { padding, maxZoom: e.zoom ?? 12 })
     map.flyTo({
       center: cam?.center ?? [e.lon, e.lat],

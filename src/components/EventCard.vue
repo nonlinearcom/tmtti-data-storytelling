@@ -127,21 +127,21 @@ watch(activeIndex, (i) => {
 </template>
 
 <style scoped>
+/* the third sheet of the stack: full height, flush to the right edge, lying
+   on the map with a soft left shadow (the About panel stacks above it) */
 .card {
   position: absolute;
-  top: 16px;
-  right: 16px;
+  top: 0;
+  right: 0;
   z-index: 10;
   width: 33.33vw;
   min-width: 360px;
   max-width: calc(100vw - 32px);
-  height: calc(100% - 32px);
+  height: 100%;
   display: flex;
   flex-direction: column;
   background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
+  box-shadow: -8px 0 20px rgba(11, 11, 11, 0.14);
 }
 .toolbar {
   flex: none;

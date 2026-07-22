@@ -259,35 +259,23 @@ watch(scale, renderAxis, { flush: 'post' })
   border-color: var(--accent);
   color: var(--accent-strong);
 }
-/* desktop: vertical timeline floating over the map's left edge, years reading
-   downward — no background of its own; halos keep text and bars legible */
+/* desktop: the bottom sheet of the paper stack — its own left column, with
+   the map sheet lying on top and casting a shadow onto the strip's edge */
 @media (min-width: 721px) {
   .timeline {
-    position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
+    order: -1;
+    flex: none;
     padding: 0;
-    /* a soft veil holds the years and bars, fading into the map */
-    background: linear-gradient(to right, var(--surface-veil) 55%, transparent);
     border: none;
-    z-index: 5; /* above the map, below the card */
-    pointer-events: none; /* the map stays draggable through the empty strip */
+    background: var(--surface-1);
+    box-shadow: inset -12px 0 12px -8px rgba(11, 11, 11, 0.18);
+    z-index: 5; /* only so the toggle floats over the map's edge */
   }
   .timeline.collapsed {
     width: 0;
   }
   svg {
     overflow: visible;
-  }
-  svg .bar {
-    pointer-events: auto;
-  }
-  .axis :deep(text) {
-    paint-order: stroke;
-    stroke: var(--surface-1);
-    stroke-width: 3px;
-    stroke-linejoin: round;
   }
   /* a tiny round button, same 26px circle language as the map markers */
   .toggle {
