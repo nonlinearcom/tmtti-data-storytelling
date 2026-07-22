@@ -130,6 +130,23 @@ async function load() {
   }
 }
 
+// Show exactly one story (the picker's "click a name" shortcut).
+async function soloStory(id) {
+  if (selectedIds.value.length === 1 && selectedIds.value[0] === id) return // already solo — keep position
+  const story = stories.value.find((s) => s.id === id)
+  if (!story) return
+  try {
+    await ensureLoaded(story)
+  } catch (e) {
+    error.value = e
+    console.error(`Could not load story "${id}":`, e)
+    return
+  }
+  selectedIds.value = [id]
+  activeIndex.value = -1
+  syncHashAndTitle()
+}
+
 async function toggleStory(id) {
   const story = stories.value.find((s) => s.id === id)
   if (!story) return
@@ -198,6 +215,7 @@ export function useStory() {
     error,
     load,
     toggleStory,
+    soloStory,
     select,
     next,
     prev,

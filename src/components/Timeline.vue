@@ -14,6 +14,7 @@ const CHAR_W = 6.5 // rough average character width of the 11px label font
 const wrap = ref(null)
 const axisEl = ref(null)
 const width = ref(900)
+const collapsed = ref(false)
 let ro
 
 const scale = computed(() => {
@@ -104,8 +105,16 @@ watch(scale, renderAxis, { flush: 'post' })
 </script>
 
 <template>
-  <div ref="wrap" class="timeline" role="group" aria-label="Timeline of events">
-    <svg :width="width" :height="height">
+  <div ref="wrap" class="timeline" :class="{ collapsed }" role="group" aria-label="Timeline of events">
+    <button
+      class="toggle"
+      :aria-expanded="!collapsed"
+      :aria-label="collapsed ? 'Expand timeline' : 'Collapse timeline'"
+      @click="collapsed = !collapsed"
+    >
+      Timeline {{ collapsed ? '▴' : '▾' }}
+    </button>
+    <svg v-show="!collapsed" :width="width" :height="height">
       <g
         v-for="b in bars"
         :key="b.id"
@@ -132,10 +141,37 @@ watch(scale, renderAxis, { flush: 'post' })
 
 <style scoped>
 .timeline {
+  position: relative;
   flex: 0 0 auto;
   background: var(--surface-1);
   border-top: 1px solid var(--border);
   padding: 6px 0 4px;
+}
+.timeline.collapsed {
+  padding: 0;
+  border-top: none;
+  background: none;
+}
+/* floats above the strip, over the map — a drawer handle */
+.toggle {
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  font: 11px var(--font);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  background: var(--surface-veil);
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 10px;
+  box-shadow: var(--shadow);
+}
+.toggle:hover {
+  border-color: var(--accent);
+  color: var(--accent-strong);
 }
 svg {
   display: block;

@@ -1,12 +1,20 @@
 <script setup>
 import { useStory } from '../composables/useStory'
+import StoryPicker from './StoryPicker.vue'
 
+const emit = defineEmits(['about'])
 const { title, events, activeIndex, activeEvent, selectedIds, selectedStories, next, prev } =
   useStory()
 </script>
 
 <template>
-  <aside class="card" aria-live="polite">
+  <aside class="card">
+    <div class="toolbar">
+      <StoryPicker />
+      <button class="about-btn" @click="emit('about')">About</button>
+    </div>
+
+    <div class="scroll" aria-live="polite">
     <template v-if="activeEvent">
       <p class="kicker">
         <template v-if="selectedIds.length > 1">
@@ -41,7 +49,6 @@ const { title, events, activeIndex, activeEvent, selectedIds, selectedStories, n
     </template>
 
     <template v-else>
-      <p class="kicker">MICRI data-storytelling workshop</p>
       <h2>{{ title?.headline || 'TMTTI' }}</h2>
       <div class="body">
         <div v-if="selectedIds.length > 1" class="story-list">
@@ -58,10 +65,11 @@ const { title, events, activeIndex, activeEvent, selectedIds, selectedStories, n
         </p>
       </div>
     </template>
+    </div>
 
-    <nav>
-      <button :disabled="activeIndex === -1" @click="prev">← Back</button>
-      <button class="primary" :disabled="activeIndex === events.length - 1" @click="next">
+    <nav v-if="events.length">
+      <button v-if="activeIndex > -1" @click="prev">← Back</button>
+      <button v-if="activeIndex < events.length - 1" class="primary" @click="next">
         {{ activeIndex === -1 ? 'Start' : 'Next →' }}
       </button>
     </nav>
@@ -74,15 +82,41 @@ const { title, events, activeIndex, activeEvent, selectedIds, selectedStories, n
   top: 16px;
   right: 16px;
   z-index: 10;
-  width: 360px;
+  width: 33.33vw;
+  min-width: 360px;
   max-width: calc(100vw - 32px);
-  max-height: calc(100% - 200px);
-  overflow-y: auto;
+  max-height: calc(100% - 180px);
+  display: flex;
+  flex-direction: column;
   background: var(--surface-1);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
-  padding: 18px 20px;
+}
+.toolbar {
+  flex: none;
+  display: flex;
+  gap: 6px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--gridline);
+}
+.about-btn {
+  font-size: 13px;
+  color: var(--text-secondary);
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 5px 10px;
+}
+.about-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent-strong);
+}
+/* only the reading area scrolls; toolbar and nav stay put */
+.scroll {
+  min-height: 0;
+  overflow-y: auto;
+  padding: 14px 20px 2px;
 }
 .kicker {
   font-size: 11px;
@@ -153,10 +187,15 @@ kbd {
   background: #fff;
 }
 nav {
+  flex: none;
   display: flex;
   justify-content: space-between;
   gap: 8px;
-  margin-top: 14px;
+  padding: 12px 20px 14px;
+}
+/* Next/Start keeps its right-edge position even when Back is hidden */
+nav .primary {
+  margin-left: auto;
 }
 button {
   border: 1px solid var(--border);
@@ -188,12 +227,22 @@ button:disabled {
   .card {
     position: static;
     width: auto;
-    max-height: 36vh;
+    min-width: 0;
+    max-width: none;
+    max-height: 42vh;
     border-radius: 0;
     border-left: none;
     border-right: none;
     box-shadow: none;
-    padding: 14px 16px;
+  }
+  .toolbar {
+    padding: 8px 12px;
+  }
+  .scroll {
+    padding: 12px 16px 2px;
+  }
+  nav {
+    padding: 10px 16px 12px;
   }
 }
 </style>
