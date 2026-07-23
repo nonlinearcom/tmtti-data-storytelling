@@ -13,21 +13,11 @@ let markers = []
 
 const MAP_STYLE = 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json'
 
-// The reading card lies over the map's right side (the timeline strip is its
-// own column, already outside this container); measure the card live so
-// cameras aim at the visible band left of it.
-function cardWidth() {
-  return document.querySelector('aside.card')?.getBoundingClientRect().width ?? 0
-}
-
-// Shift the camera target so it centers in the free band left of the card.
-// A per-call offset, deliberately NOT camera padding: MapLibre keeps padding as
-// sticky state (and strands it mid-value on interrupted flights), which was
-// leaving the overview globe off-center after visiting an event.
-function cardOffset() {
-  const w = container.value?.clientWidth ?? 1000
-  if (w <= 720) return [0, 0] // mobile: the card sits in the flex column, not over the map
-  return [-cardWidth() / 2, 25]
+// The map container stops at the reading card's left border (see the .map
+// margin below), so cameras center in the visible band naturally. Only a
+// small downward nudge remains, keeping the globe clear of the toolbar.
+function viewOffset() {
+  return window.matchMedia('(max-width: 720px)').matches ? [0, 0] : [0, 25]
 }
 
 // students' sheets mid-edit often lack coordinates — those events live on the
@@ -43,13 +33,12 @@ function overview(animate = true) {
   // centered in the viewport — the card may overlap its right edge, by design.
   const cam = map.cameraForBounds(b, { padding: 60, maxZoom: 5 })
   // turn the globe to where the story begins — events are chronological, so
-  // the first located event is the story's first mappable chapter; the offset
-  // keeps the globe centered in the band between timeline and card
+  // the first located event is the story's first mappable chapter
   const first = locs[0]
   map.flyTo({
     center: [first.lon, first.lat],
     zoom: cam?.zoom ?? 1.4,
-    offset: cardOffset(),
+    offset: viewOffset(),
     duration: animate ? 1400 : 0,
     essential: true,
   })
@@ -129,6 +118,14 @@ function clearStory() {
 let shapeBoxes = {} // eventIndex → [[w, s], [e, n]], for fitBounds
 let buildToken = 0 // invalidates in-flight shape fetches on story switch
 
+// story colors sit close to the basemap's POI palette — shape dots, labels and
+// lines use a darkened variant so the data reads as data, not as more places
+function darken(hex, k = 0.65) {
+  const n = parseInt(hex.slice(1), 16)
+  const ch = (s) => Math.round(((n >> s) & 255) * k)
+  return `rgb(${ch(16)}, ${ch(8)}, ${ch(0)})`
+}
+
 function bboxOf(features) {
   let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity
   const walk = (c) => {
@@ -162,7 +159,10 @@ async function loadShapes(evts, token) {
               ? [gj]
               : [{ type: 'Feature', properties: {}, geometry: gj }]
         fs.forEach((f) =>
-          features.push({ ...f, properties: { ...f.properties, eventIndex: i, color: e.color } })
+          features.push({
+            ...f,
+            properties: { ...f.properties, eventIndex: i, color: e.color, colorDark: darken(e.color) },
+          })
         )
         shapeBoxes[i] = bboxOf(fs)
       } catch (err) {
@@ -186,7 +186,7 @@ async function loadShapes(evts, token) {
       type: 'fill',
       source: 'story-shapes',
       filter: fillFilter,
-      paint: { 'fill-color': ['get', 'color'], 'fill-opacity': 0.12 },
+      paint: { 'fill-color': ['get', 'colorDark'], 'fill-opacity': 0.12 },
     },
     'story-line' // areas sit beneath the dashed story line
   )
@@ -198,7 +198,7 @@ async function loadShapes(evts, token) {
       type: 'line',
       source: 'story-shapes',
       filter,
-      paint: { 'line-color': ['get', 'color'], 'line-width': 2.5, 'line-opacity': 0.85 },
+      paint: { 'line-color': ['get', 'colorDark'], 'line-width': 2.5, 'line-opacity': 0.85 },
     },
     'story-line'
   )
@@ -211,8 +211,8 @@ async function loadShapes(evts, token) {
       filter: pointFilter,
       paint: {
         'circle-radius': 7,
-        'circle-color': ['get', 'color'],
-        'circle-opacity': 0.85,
+        'circle-color': ['get', 'colorDark'],
+        'circle-opacity': 1,
         'circle-stroke-color': '#fcfcfb',
         'circle-stroke-width': 2,
       },
@@ -238,7 +238,7 @@ async function loadShapes(evts, token) {
       'text-ignore-placement': true,
     },
     paint: {
-      'text-color': ['get', 'color'],
+      'text-color': ['get', 'colorDark'],
       'text-halo-color': '#fcfcfb',
       'text-halo-width': 2,
     },
@@ -303,17 +303,15 @@ watch(activeIndex, (i) => {
     map.flyTo({
       center: [(box[0][0] + box[1][0]) / 2, (box[0][1] + box[1][1]) / 2],
       zoom: 1.05,
-      offset: cardOffset(),
+      offset: viewOffset(),
       duration: 2200,
       essential: true,
     })
   } else if (box) {
     // An event with an area frames the whole area, not just its marker.
-    // Instead of cardOffset's fixed nudge, reserve the card's measured
-    // footprint as right padding so wide shapes like the TAT-8 cable aren't
-    // half-hidden under it.
-    const w = container.value?.clientWidth ?? 1000
-    const padding = w > 720 ? { top: 48, bottom: 48, left: 24, right: cardWidth() + 48 } : 40
+    const padding = window.matchMedia('(max-width: 720px)').matches
+      ? 40
+      : { top: 48, bottom: 48, left: 24, right: 24 }
     const cam = map.cameraForBounds(box, { padding, maxZoom: e.zoom ?? 12 })
     map.flyTo({
       center: cam?.center ?? [e.lon, e.lat],
@@ -325,7 +323,7 @@ watch(activeIndex, (i) => {
     map.flyTo({
       center: [e.lon, e.lat],
       zoom: Math.min(e.zoom ?? 10, 12),
-      offset: cardOffset(),
+      offset: viewOffset(),
       speed: 0.8,
       essential: true,
     })
@@ -342,6 +340,14 @@ watch(activeIndex, (i) => {
   position: relative;
   flex: 1 1 auto;
   min-height: 0;
+}
+/* desktop: stop at the reading card's left border (its width lives in
+   EventCard's .card rule — keep the two in sync) so the globe centers in
+   the visible band instead of extending beneath the card */
+@media (min-width: 721px) {
+  .map {
+    margin-right: max(33.33vw, 360px);
+  }
 }
 </style>
 

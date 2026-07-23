@@ -1,0 +1,1511 @@
+{
+ "type": "FeatureCollection",
+ "features": [
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "HAWAII\u2013AMES",
+    "kind": "satellite"
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      -157.8583,
+      21.3069
+     ],
+     [
+      -122.0647,
+      37.421
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "MOFFETT\u2013LBL"
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      -122.0647,
+      37.409
+     ],
+     [
+      -122.2508,
+      37.8759
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "AMES\u2013MOFFETT"
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      -122.0647,
+      37.421
+     ],
+     [
+      -122.0647,
+      37.409
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "AMES\u2013SRI"
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      -122.0647,
+      37.421
+     ],
+     [
+      -122.1817,
+      37.453
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "AMES\u2013STANFORD"
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      -122.0647,
+      37.421
+     ],
+     [
+      -122.1697,
+      37.4275
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "LBL\u2013LLL"
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      -122.2508,
+      37.8759
+     ],
+     [
+      -121.768,
+      37.6819
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "LLL\u2013SRI"
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      -121.768,
+      37.6819
+     ],
+     [
+      -122.1817,
+      37.453
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "LBL\u2013UTAH"
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      -122.2508,
+      37.8759
+     ],
+     [
+      -111.8421,
+      40.7649
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "SRI\u2013XEROX"
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      -122.1817,
+      37.453
+     ],
+     [
+      -122.143,
+      37.4419
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "XEROX\u2013TYMSHARE"
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      -122.143,
+      37.4419
+     ],
+     [
+      -122.0322,
+      37.323
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "TYMSHARE\u2013FNWC"
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      -122.0322,
+      37.323
+     ],
+     [
+      -121.8947,
+      36.6002
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "FNWC\u2013UCSB"
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      -121.8947,
+      36.6002
+     ],
+     [
+      -119.8489,
+      34.414
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "STANFORD\u2013UCSB"
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      -122.1697,
+      37.4275
+     ],
+     [
+      -119.8489,
+      34.414
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "UCSB\u2013UCLA"
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      -119.8489,
+      34.414
+     ],
+     [
+      -118.4452,
+      34.0689
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "UCSD\u2013UCLA"
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      -117.234,
+      32.8801
+     ],
+     [
+      -118.4452,
+      34.0689
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "UCSD\u2013RAND"
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      -117.234,
+      32.8801
+     ],
+     [
+      -118.4912,
+      34.0195
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "RAND\u2013USC-ISI"
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      -118.4912,
+      34.0195
+     ],
+     [
+      -118.4517,
+      33.9802
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "UCLA\u2013SDC"
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      -118.4452,
+      34.0689
+     ],
+     [
+      -118.4912,
+      34.0305
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "SDC\u2013USC"
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      -118.4912,
+      34.0305
+     ],
+     [
+      -118.2851,
+      34.0224
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "DOCB\u2013USC"
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      -105.2705,
+      40.015
+     ],
+     [
+      -118.2851,
+      34.0224
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "USC-ISI\u2013KIRTLAND"
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      -118.4517,
+      33.9802
+     ],
+     [
+      -106.56,
+      35.04
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "KIRTLAND\u2013RML"
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      -106.56,
+      35.04
+     ],
+     [
+      -80.6098,
+      28.2352
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "UTAH\u2013ILLINOIS"
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      -111.8421,
+      40.7649
+     ],
+     [
+      -88.2272,
+      40.102
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "DOCB\u2013GWC"
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      -105.2705,
+      40.015
+     ],
+     [
+      -95.9128,
+      41.1189
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "GWC\u2013CASE"
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      -95.9128,
+      41.1189
+     ],
+     [
+      -81.6086,
+      41.5044
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "ILLINOIS\u2013WPAFB"
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      -88.2272,
+      40.102
+     ],
+     [
+      -84.0483,
+      39.8261
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "WPAFB\u2013MIT-MAC"
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      -84.0483,
+      39.8261
+     ],
+     [
+      -71.0942,
+      42.3601
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "CASE\u2013RADC"
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      -81.6086,
+      41.5044
+     ],
+     [
+      -75.4557,
+      43.2128
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "RADC\u2013LINCOLN"
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      -75.4557,
+      43.2128
+     ],
+     [
+      -71.2639,
+      42.443
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "CASE\u2013CMU"
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      -81.6086,
+      41.5044
+     ],
+     [
+      -79.9436,
+      40.4433
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "CMU\u2013BELVOIR"
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      -79.9436,
+      40.4433
+     ],
+     [
+      -77.1436,
+      38.7118
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "RUTGERS\u2013ABERDEEN"
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      -74.4474,
+      40.5008
+     ],
+     [
+      -76.171,
+      39.4665
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "RUTGERS\u2013BBN"
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      -74.4474,
+      40.5008
+     ],
+     [
+      -71.104,
+      42.3656
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "BELVOIR\u2013ABERDEEN"
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      -77.1436,
+      38.7118
+     ],
+     [
+      -76.171,
+      39.4665
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "BELVOIR\u2013SDAC"
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      -77.1436,
+      38.7118
+     ],
+     [
+      -77.0469,
+      38.8048
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "SDAC\u2013MITRE"
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      -77.0469,
+      38.8048
+     ],
+     [
+      -77.2214,
+      38.9337
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "MITRE\u2013ARPA"
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      -77.2214,
+      38.9337
+     ],
+     [
+      -77.091,
+      38.8816
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "ARPA\u2013ETAC"
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      -77.091,
+      38.8816
+     ],
+     [
+      -77.0364,
+      38.8951
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "ABERDEEN\u2013NBS"
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      -76.171,
+      39.4665
+     ],
+     [
+      -77.2169,
+      39.1357
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "NBS\u2013ETAC"
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      -77.2169,
+      39.1357
+     ],
+     [
+      -77.0364,
+      38.8951
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "ETAC\u2013RML"
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      -77.0364,
+      38.8951
+     ],
+     [
+      -80.6098,
+      28.2352
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "SDAC\u2013NORSAR",
+    "kind": "satellite"
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      -77.0469,
+      38.8048
+     ],
+     [
+      11.0442,
+      59.975
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "NORSAR\u2013LONDON",
+    "kind": "satellite"
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      11.0442,
+      59.975
+     ],
+     [
+      -0.134,
+      51.5246
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "LINCOLN\u2013MIT-IPC"
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      -71.2639,
+      42.443
+     ],
+     [
+      -71.0942,
+      42.3711
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "MIT-IPC\u2013MIT-MAC"
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      -71.0942,
+      42.3711
+     ],
+     [
+      -71.0942,
+      42.3601
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "MIT-MAC\u2013CCA"
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      -71.0942,
+      42.3601
+     ],
+     [
+      -71.118,
+      42.3656
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "CCA\u2013BBN"
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      -71.118,
+      42.3656
+     ],
+     [
+      -71.104,
+      42.3656
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "BBN\u2013NCC"
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      -71.104,
+      42.3656
+     ],
+     [
+      -71.09,
+      42.3656
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "NCC\u2013HARVARD"
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      -71.09,
+      42.3656
+     ],
+     [
+      -71.1167,
+      42.377
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "HAWAII"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -157.8583,
+     21.3069
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "STANFORD"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -122.1697,
+     37.4275
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "MOFFETT"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -122.0647,
+     37.409
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "LBL"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -122.2508,
+     37.8759
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "AMES"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -122.0647,
+     37.421
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "LLL"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -121.768,
+     37.6819
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "SRI"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -122.1817,
+     37.453
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "XEROX"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -122.143,
+     37.4419
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "TYMSHARE"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -122.0322,
+     37.323
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "FNWC"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -121.8947,
+     36.6002
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "UCSB"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -119.8489,
+     34.414
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "UCSD"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -117.234,
+     32.8801
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "UCLA"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -118.4452,
+     34.0689
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "SDC"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -118.4912,
+     34.0305
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "RAND"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -118.4912,
+     34.0195
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "USC-ISI"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -118.4517,
+     33.9802
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "USC"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -118.2851,
+     34.0224
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "UTAH"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -111.8421,
+     40.7649
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "DOCB"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -105.2705,
+     40.015
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "KIRTLAND"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -106.56,
+     35.04
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "ILLINOIS"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -88.2272,
+     40.102
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "GWC"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -95.9128,
+     41.1189
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "WPAFB"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -84.0483,
+     39.8261
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "CASE"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -81.6086,
+     41.5044
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "RADC"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -75.4557,
+     43.2128
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "CMU"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -79.9436,
+     40.4433
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "BELVOIR"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -77.1436,
+     38.7118
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "ABERDEEN"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -76.171,
+     39.4665
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "SDAC"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -77.0469,
+     38.8048
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "MITRE"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -77.2214,
+     38.9337
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "ARPA"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -77.091,
+     38.8816
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "ETAC"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -77.0364,
+     38.8951
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "NBS"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -77.2169,
+     39.1357
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "RUTGERS"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -74.4474,
+     40.5008
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "HARVARD"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -71.1167,
+     42.377
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "NCC"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -71.09,
+     42.3656
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "BBN"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -71.104,
+     42.3656
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "CCA"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -71.118,
+     42.3656
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "MIT-MAC"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -71.0942,
+     42.3601
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "MIT-IPC"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -71.0942,
+     42.3711
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "LINCOLN"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -71.2639,
+     42.443
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "NORSAR"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     11.0442,
+     59.975
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "LONDON"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.134,
+     51.5246
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "RML"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -80.6098,
+     28.2352
+    ]
+   }
+  }
+ ]
+}
