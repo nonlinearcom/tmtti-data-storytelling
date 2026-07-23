@@ -71,11 +71,12 @@ watch(
 </template>
 
 <style scoped>
+/* invisible — the sheet needs no dimming in the paper stack, but the
+   full-screen layer keeps click-anywhere-outside-to-close working */
 .backdrop {
   position: fixed;
   inset: 0;
   z-index: 100;
-  background: rgba(11, 11, 11, 0.35);
 }
 .panel {
   position: absolute;
@@ -84,7 +85,8 @@ watch(
   bottom: 0;
   width: min(420px, 100%);
   background: var(--surface-1);
-  box-shadow: -4px 0 24px rgba(11, 11, 11, 0.2);
+  /* topmost sheet of the stack — deepest shadow */
+  box-shadow: -10px 0 28px rgba(11, 11, 11, 0.26);
   padding: 24px 28px;
   overflow-y: auto;
 }

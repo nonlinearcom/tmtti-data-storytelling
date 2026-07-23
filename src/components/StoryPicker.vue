@@ -2,7 +2,7 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useStory } from '../composables/useStory'
 
-const { stories, selectedIds, selectedStories, toggleStory } = useStory()
+const { stories, selectedIds, selectedStories, toggleStory, soloStory } = useStory()
 
 const open = ref(false)
 const root = ref(null)
@@ -12,6 +12,11 @@ const label = computed(() =>
     ? selectedStories.value[0]?.title
     : `${selectedIds.value.length} stories`
 )
+
+function solo(id) {
+  soloStory(id)
+  open.value = false
+}
 
 function onDocClick(e) {
   if (open.value && root.value && !root.value.contains(e.target)) open.value = false
@@ -42,16 +47,20 @@ onBeforeUnmount(() => {
     </button>
 
     <div v-if="open" class="panel" role="group" aria-label="Stories to show">
-      <label v-for="s in stories" :key="s.id" class="row">
+      <div v-for="s in stories" :key="s.id" class="row">
+        <button class="solo" @click="solo(s.id)">
+          <span class="dot" :style="{ background: s.color }" />
+          <span class="name">{{ s.title }}</span>
+        </button>
         <input
           type="checkbox"
           :checked="selectedIds.includes(s.id)"
           :disabled="selectedIds.includes(s.id) && selectedIds.length === 1"
+          :aria-label="`Include ${s.title}`"
           @change="toggleStory(s.id)"
         />
-        <span class="dot" :style="{ background: s.color }" />
-        <span class="name">{{ s.title }}</span>
-      </label>
+      </div>
+      <!-- <p class="hint">Click a name to view that story alone</p> -->
     </div>
   </div>
 </template>
@@ -115,25 +124,44 @@ onBeforeUnmount(() => {
 .row {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 8px;
   border-radius: 4px;
-  font-size: 13px;
-  cursor: pointer;
 }
 .row:hover {
   background: rgba(11, 11, 11, 0.04);
 }
 .row input {
   accent-color: var(--accent);
+  margin: 0 8px 0 0;
+  cursor: pointer;
 }
 .row input:disabled {
   cursor: default;
+}
+/* the name is its own button: clicking it shows only that story */
+.solo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font: 13px var(--font);
+  color: var(--text-primary);
+  background: none;
+  border: none;
+  padding: 6px 8px;
+  text-align: left;
 }
 .name {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.hint {
+  margin: 4px 4px 2px;
+  padding: 6px 8px 2px;
+  border-top: 1px solid var(--gridline);
+  font-size: 11px;
+  color: var(--text-muted);
 }
 </style>

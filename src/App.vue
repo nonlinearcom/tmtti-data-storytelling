@@ -4,10 +4,9 @@ import MapView from './components/MapView.vue'
 import Timeline from './components/Timeline.vue'
 import EventCard from './components/EventCard.vue'
 import AboutModal from './components/AboutModal.vue'
-import StoryPicker from './components/StoryPicker.vue'
 import { useStory } from './composables/useStory'
 
-const { title, load, next, prev } = useStory()
+const { load, next, prev } = useStory()
 const aboutOpen = ref(false)
 
 function onKey(e) {
@@ -32,15 +31,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
 <template>
   <div class="app">
     <MapView />
-    <header>
-      <h1>{{ title?.headline || 'TMTTI' }}</h1>
-      <p>timeline × map · MICRI data-storytelling workshop</p>
-      <div class="controls">
-        <StoryPicker />
-        <button class="about-btn" @click="aboutOpen = true">About</button>
-      </div>
-    </header>
-    <EventCard />
+    <EventCard @about="aboutOpen = true" />
     <Timeline />
     <AboutModal :open="aboutOpen" @close="aboutOpen = false" />
   </div>
@@ -51,54 +42,14 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
   position: fixed;
   inset: 0;
   display: flex;
-  flex-direction: column;
+  /* desktop: the map is the only in-flow child (timeline and card float
+     above it); mobile stacks map / card / timeline as a column */
+  flex-direction: row;
   overflow: hidden;
 }
-header {
-  position: absolute;
-  top: 16px;
-  left: 16px;
-  z-index: 10;
-  background: var(--surface-veil);
-  backdrop-filter: blur(6px);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  padding: 10px 14px;
-  max-width: 320px;
-}
-header h1 {
-  font-size: 18px;
-  margin: 0;
-}
-header p {
-  margin: 2px 0 0;
-  font-size: 12px;
-  color: var(--text-muted);
-}
-.controls {
-  display: flex;
-  gap: 6px;
-  margin-top: 8px;
-}
-.about-btn {
-  font: 13px var(--font);
-  color: var(--text-secondary);
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 5px 10px;
-}
-.about-btn:hover {
-  border-color: var(--accent);
-  color: var(--accent-strong);
-}
 @media (max-width: 720px) {
-  header {
-    max-width: 240px;
-  }
-  header h1 {
-    font-size: 15px;
+  .app {
+    flex-direction: column;
   }
 }
 </style>

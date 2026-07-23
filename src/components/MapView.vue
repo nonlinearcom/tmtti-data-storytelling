@@ -13,13 +13,21 @@ let markers = []
 
 const MAP_STYLE = 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json'
 
-// Shift the camera target left/down so it stays clear of the event card.
+// The reading card lies over the map's right side (the timeline strip is its
+// own column, already outside this container); measure the card live so
+// cameras aim at the visible band left of it.
+function cardWidth() {
+  return document.querySelector('aside.card')?.getBoundingClientRect().width ?? 0
+}
+
+// Shift the camera target so it centers in the free band left of the card.
 // A per-call offset, deliberately NOT camera padding: MapLibre keeps padding as
 // sticky state (and strands it mid-value on interrupted flights), which was
 // leaving the overview globe off-center after visiting an event.
 function cardOffset() {
   const w = container.value?.clientWidth ?? 1000
-  return w > 760 ? [-190, 25] : [0, 0]
+  if (w <= 720) return [0, 0] // mobile: the card sits in the flex column, not over the map
+  return [-cardWidth() / 2, 25]
 }
 
 // students' sheets mid-edit often lack coordinates — those events live on the
@@ -35,11 +43,13 @@ function overview(animate = true) {
   // centered in the viewport — the card may overlap its right edge, by design.
   const cam = map.cameraForBounds(b, { padding: 60, maxZoom: 5 })
   // turn the globe to where the story begins — events are chronological, so
-  // the first located event is the story's first mappable chapter
+  // the first located event is the story's first mappable chapter; the offset
+  // keeps the globe centered in the band between timeline and card
   const first = locs[0]
   map.flyTo({
     center: [first.lon, first.lat],
     zoom: cam?.zoom ?? 1.4,
+    offset: cardOffset(),
     duration: animate ? 1400 : 0,
     essential: true,
   })
@@ -104,7 +114,7 @@ function buildStoryLayer() {
 function clearStory() {
   markers.forEach((m) => m?.remove())
   markers = []
-  for (const id of ['story-line', 'story-shape-fill', 'story-shape-line', 'story-shape-point']) {
+  for (const id of ['story-line', 'story-shape-fill', 'story-shape-line', 'story-shape-point', 'story-shape-label']) {
     if (map.getLayer(id)) map.removeLayer(id)
   }
   for (const id of ['story-line', 'story-shapes']) {
@@ -168,23 +178,27 @@ async function loadShapes(evts, token) {
   const filter = ['==', ['get', 'eventIndex'], activeIndex.value]
   // circle layers draw a dot on EVERY vertex of polygons/lines too — restrict to real points
   const pointFilter = ['all', ['==', ['geometry-type'], 'Point'], filter]
+  // fill layers auto-close and fill LineStrings too — restrict to real polygons
+  const fillFilter = ['all', ['==', ['geometry-type'], 'Polygon'], filter]
   map.addLayer(
     {
       id: 'story-shape-fill',
       type: 'fill',
       source: 'story-shapes',
-      filter,
+      filter: fillFilter,
       paint: { 'fill-color': ['get', 'color'], 'fill-opacity': 0.12 },
     },
     'story-line' // areas sit beneath the dashed story line
   )
+  // solid and heavier than the 1.5px dashed story route, so shape lines read as
+  // geography (a cable, a border) rather than as another leg of the route
   map.addLayer(
     {
       id: 'story-shape-line',
       type: 'line',
       source: 'story-shapes',
       filter,
-      paint: { 'line-color': ['get', 'color'], 'line-width': 1.5, 'line-opacity': 0.6 },
+      paint: { 'line-color': ['get', 'color'], 'line-width': 2.5, 'line-opacity': 0.85 },
     },
     'story-line'
   )
@@ -196,15 +210,39 @@ async function loadShapes(evts, token) {
       source: 'story-shapes',
       filter: pointFilter,
       paint: {
-        'circle-radius': 5,
+        'circle-radius': 7,
         'circle-color': ['get', 'color'],
         'circle-opacity': 0.85,
         'circle-stroke-color': '#fcfcfb',
-        'circle-stroke-width': 1.5,
+        'circle-stroke-width': 2,
       },
     },
     'story-line'
   )
+  // ...and say what they are: a dot without its "name" property rendered is
+  // decoration, not data. Borrow a font the basemap's glyph server serves.
+  const styleFont = map.getStyle().layers.find((l) => l.layout?.['text-font'])?.layout['text-font']
+  map.addLayer({
+    id: 'story-shape-label',
+    type: 'symbol',
+    source: 'story-shapes',
+    filter: pointFilter,
+    layout: {
+      'text-field': ['get', 'name'],
+      ...(styleFont ? { 'text-font': styleFont } : {}),
+      'text-size': 12,
+      'text-anchor': 'top',
+      'text-offset': [0, 0.8],
+      // these labels ARE the data — never let a basemap label out-compete them
+      'text-allow-overlap': true,
+      'text-ignore-placement': true,
+    },
+    paint: {
+      'text-color': ['get', 'color'],
+      'text-halo-color': '#fcfcfb',
+      'text-halo-width': 2,
+    },
+  })
 }
 
 onMounted(() => {
@@ -245,9 +283,11 @@ watch(activeIndex, (i) => {
   markers.forEach((m, idx) => m?.getElement().classList.toggle('active', idx === i))
   if (map.getLayer('story-shape-fill')) {
     const filter = ['==', ['get', 'eventIndex'], i]
-    map.setFilter('story-shape-fill', filter)
+    map.setFilter('story-shape-fill', ['all', ['==', ['geometry-type'], 'Polygon'], filter])
     map.setFilter('story-shape-line', filter)
-    map.setFilter('story-shape-point', ['all', ['==', ['geometry-type'], 'Point'], filter])
+    const pointFilter = ['all', ['==', ['geometry-type'], 'Point'], filter]
+    map.setFilter('story-shape-point', pointFilter)
+    map.setFilter('story-shape-label', pointFilter)
   }
   const e = events.value[i]
   if (!e) {
@@ -256,13 +296,28 @@ watch(activeIndex, (i) => {
   }
   if (e.lat == null || e.lon == null) return // unlocated: timeline/card only, camera stays
   const box = shapeBoxes[i]
-  if (box) {
-    // an event with an area frames the whole area, not just its marker
-    const cam = map.cameraForBounds(box, { padding: 40, maxZoom: e.zoom ?? 12 })
+  if (box && box[1][0] - box[0][0] > 150) {
+    // Planet-spanning shapes (the smartphone supply chain) can never fit in a
+    // globe viewport — cameraForBounds has no answer. Show the fullest
+    // hemisphere instead and let people spin the globe for the rest.
+    map.flyTo({
+      center: [(box[0][0] + box[1][0]) / 2, (box[0][1] + box[1][1]) / 2],
+      zoom: 1.05,
+      offset: cardOffset(),
+      duration: 2200,
+      essential: true,
+    })
+  } else if (box) {
+    // An event with an area frames the whole area, not just its marker.
+    // Instead of cardOffset's fixed nudge, reserve the card's measured
+    // footprint as right padding so wide shapes like the TAT-8 cable aren't
+    // half-hidden under it.
+    const w = container.value?.clientWidth ?? 1000
+    const padding = w > 720 ? { top: 48, bottom: 48, left: 24, right: cardWidth() + 48 } : 40
+    const cam = map.cameraForBounds(box, { padding, maxZoom: e.zoom ?? 12 })
     map.flyTo({
       center: cam?.center ?? [e.lon, e.lat],
       zoom: cam?.zoom ?? 5,
-      offset: cardOffset(),
       duration: 2200,
       essential: true,
     })
