@@ -2,7 +2,7 @@
   { "id": "the-digital-border", "title": "The Digital Border", "file": "the-digital-border.csv" },
   { "id": "the-world-wide-web", "title": "The World Wide Web", "file": "the-world-wide-web.csv" },
   { "id": "the-internet", "title": "The Internet", "file": "the-internet.csv" },
-  { "id": "chip-evolution", "title": "The Era of Discovery and Chip Evolution", "file": "chip-evolution.csv" },
+  { "id": "chip-evolution", "title": "Semiconductors", "file": "chip-evolution.csv" },
   { "id": "the-smartphone", "title": "The Smartphone", "file": "the-smartphone.csv" },
   { "id": "social-networks", "title": "Social Networks", "file": "social-networks.csv" }
 ]
